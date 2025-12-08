@@ -1,0 +1,35 @@
+name: rag_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.13
+  - pip
+  - pip:
+    # データ処理
+    - numpy
+    - pandas
+    - openpyxl
+    
+    # OCI & Oracle
+    - oci
+    - oracledb
+    
+    # LangChain & RAG
+    - langchain-community
+    - pymupdf
+    - datasets
+    - ragas
+    
+    # 環境設定
+    - python-dotenv
+    
+    # Jupyter
+    - ipykernel
+    
+    # NLP & Transformers
+    - protobuf
+    - sentencepiece
+    - sentence-transformers
+    - torch
+    - transformers>=4.48.0
