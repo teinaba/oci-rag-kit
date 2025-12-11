@@ -1,107 +1,170 @@
 # OCI RAG Kit
+
+> Oracle Database 26ai × OCI Generative AI で作る、日本語RAGシステムのスターターキット
+
+![Oracle Cloud](https://img.shields.io/badge/Oracle%20Cloud-F80000?logo=oracle&logoColor=white)
+![Oracle AI Database](https://img.shields.io/badge/Oracle%20AI%20Database-26ai-red)
+![Autonomous Database](https://img.shields.io/badge/Autonomous%20Database-26ai-red)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-0.3%2B-1C3C3C?logo=langchain&logoColor=white)
+![RAGAS](https://img.shields.io/badge/RAGAS-evaluation-9cf)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 本リポジトリは個人による非公式サンプルです。Oracle公式の配布物ではありません。
 
-Oracle Database 26ai のベクトル検索と OCI Generative AI Service を活用した日本語向け RAG（Retrieval-Augmented Generation）環境を簡単に構築できるKitです。  
+## Features
 
-本リポジトリは以下を提供します:
-- Oracle AI Database 上のドキュメント/ベクトルデータ格納スキーマの構築
-- OCI Object Storage からのドキュメント取り込み～チャンク化～Embedding～DB保存のパイプライン
-- ベクトル検索 + 再ランク + LLM回答生成、および RAGAS による品質評価
-  - FAQ一覧ファイルの一括実行によるRAG回答精度評価を効率化します
+**Vector Search on Oracle Database 26ai**
+ベクトル検索機能を使った高速な文書検索
 
-## リポジトリ構成
+**Automated Data Pipeline**
+Object Storage → チャンク化 → Embedding → DB保存まで自動化
 
+**Rerank & LLM Generation**
+日本語Rerankerによる精度向上 + Cohereモデルでの回答生成
+
+**RAGAS Evaluation**
+FAQ一括評価でRAG品質を定量測定
+
+## Quick Start
+
+```bash
+# 1. 環境変数設定
+cp .env.template .env
+# .env を編集してOCI/DB接続情報を入力
+
+# 2. 環境構築（conda）
+cd setup && bash setup.sh
+
+# 3. Notebookを順番に実行
+# 11_create_table.ipynb    → DBテーブル作成
+# 12_data_pipeline.ipynb   → データ取り込み
+# 13_rag.ipynb             → RAG実行・評価
 ```
-.
-├── .gitignore
-├── .env.template                  # 環境変数テンプレート（これを .env にコピーして編集してください）
-├── notebooks
-│   ├── 11_create_table.ipynb      # DBテーブル作成
-│   ├── 12_data_pipeline.ipynb     # 取込/チャンク/Embedding/DB保存
-│   ├── 13_rag.ipynb               # 検索/再ランク/回答生成/評価
-│   └── config_loader.py           # 設定読み込みユーティリティ
-├── README.md
-└── setup
-    ├── environment.yaml           # conda 環境定義
-    └── setup.sh                   # 環境セットアップ補助スクリプト
-```
 
-## 前提条件
+## Prerequisites
+
 - Oracle Autonomous AI Database 26ai
-- OCIリソース(Object Storage、Generative AI Service, Data Science) へのアクセス
+- OCI リソースへのアクセス
+  - Object Storage
+  - Generative AI Service
+  - Data Science (Notebook環境)
 
-## セットアップ
-- 初期設定
-  - `cp .env.template .env`
-  - .env を編集して必要な値を設定
-  - `python notebooks/config_loader.py` で読み込みテスト
-- セットアップスクリプト（conda）
-  - Data Science上のターミナルで以下を実行
-    - `cd setup`
-    - `bash setup.sh`
+## Repository Structure
 
-## 設定
+```
+notebooks/          # Jupyter Notebooks
+├── 11_create_table.ipynb
+├── 12_data_pipeline.ipynb
+└── 13_rag.ipynb
 
-1) OCI 認証 (~/.oci/config)
-- OCI コンソールで API キーを作成し、~/.oci/config を用意
-- 例:
-  - [DEFAULT]
-    user=ocid1.user.oc1..xxxxxxxx
-    fingerprint=aa:bb:...
-    tenancy=ocid1.tenancy.oc1..xxxxxxxx
-    region=ap-osaka-1
-    key_file=~/.oci/oci_api_key.pem
+setup/              # 環境構築
+├── environment.yaml
+└── setup.sh
 
-2) .env（機密値はここに保持）
-- .env.template をコピーして .env を作成し、以下を設定
-  - DB_USERNAME, DB_PASSWORD, DB_DSN
-  - OCI_CONFIG_FILE（省略時 ~/.oci/config）
-  - OCI_PROFILE（省略時 DEFAULT）
-  - OCI_COMPARTMENT_ID
-  - OCI_GENAI_ENDPOINT（例: https://inference.generativeai.ap-osaka-1.oci.oraclecloud.com）
-  - OCI_EMBED_MODEL（例: cohere.embed-v4.0）
-  - OCI_LLM_MODEL（例: cohere.command-a-03-2024 または cohere.command-a-03-2025 など）
-  - OCI_BUCKET_NAME, OCI_NAMESPACE（Object Storage 用）
-  - CHUNK_SIZE（例: 500）, CHUNK_OVERLAP（例: 50）, TOP_K（例: 5）
+.env.template       # 環境変数テンプレート
+```
 
-## 使い方（Notebook）
+## Configuration
 
-1) 11_create_table.ipynb（テーブル作成）
-- source_documents, chunks テーブルを作成
-- 既存の場合は作成済みメッセージが出力
-- テーブル構造・中身の確認ユーティリティあり
-- 注意: TRUNCATE/DROP はコメントアウトを外すと実行されます。必要時のみ実行してください
+<details>
+<summary>詳細な設定手順（クリックで展開）</summary>
 
-2) 12_data_pipeline.ipynb（データ取り込み）
-- Object Storage バケットからファイル一覧を取得
-- サポート形式: pdf, txt, csv
-  - pdf: PyMuPDF で読込み
-  - txt/csv: UTF-8 または Shift-JIS を自動判定
-- チャンク分割（RecursiveCharacterTextSplitter）
-- 埋め込み（OCIGenAIEmbeddings）
-- DB へ保存（source_documents と chunks）
-- タイムゾーンは Asia/Tokyo を使用（必要に応じて変更可）
+### 1. OCI 認証設定
 
-3) 13_rag.ipynb（RAG 実行と評価）
-- クエリを埋め込み → Oracle Database でベクトル検索（COSINE 距離）
-- hotchpotch/japanese-reranker-base-v2 による Rerank（任意）
-- Cohere ベースの LLM で回答生成（OCI Generative AI 経由）
-- RAGAS（Faithfulness、AnswerCorrectness、ContextPrecision、ContextRecall）で評価
-- 入出力（FAQ Excel）を Object Storage に保存/読込
+`~/.oci/config` を作成：
 
-## 設計メモ
-- スキーマ
-  - source_documents: ドキュメントのメタ情報（filename, filtering, content_type, file_size, text_length, registered_date）
-  - chunks: chunk_text（CLOB）, embedding（VECTOR）, document_id（FK）
-- ベクトル検索
-  - VECTOR_DISTANCE(..., COSINE) を使用
-  - 上位件数は TOP_K で調整
-- タイムゾーン
-  - 例: CAST(systimestamp AT TIME ZONE 'Asia/Tokyo' AS timestamp)
+```ini
+[DEFAULT]
+user=ocid1.user.oc1..xxxxxxxx
+fingerprint=aa:bb:cc:dd:...
+tenancy=ocid1.tenancy.oc1..xxxxxxxx
+region=ap-osaka-1
+key_file=~/.oci/oci_api_key.pem
+```
 
-## Third-Party Notices / モデル・サービスの利用について
-- 本プロジェクトは Reranker に「hotchpotch/japanese-reranker-base-v2」を利用します。モデル本体（重み）は同梱せず、ユーザー環境で取得されます。利用条件はモデル配布ページのライセンス・利用規約に従ってください（https://huggingface.co/hotchpotch/japanese-reranker-base-v2）。
-- OCI Generative AI 経由で Cohere のモデルを利用します。OCI/Cohere の各利用条件に従ってください。
+### 2. 環境変数（.env）
 
-## 免責事項
-- 本サンプルは参考実装です。運用環境に導入する場合は、セキュリティ/可用性/監査要件に合わせて十分な検証とレビューを行ってください。
+`.env.template` をコピーして `.env` を作成し、以下を設定：
+
+| 変数名 | 説明 | 例 |
+|--------|------|-----|
+| `DB_USERNAME` | DB ユーザー名 | `ADMIN` |
+| `DB_PASSWORD` | DB パスワード | `YourPassword123` |
+| `DB_DSN` | DB 接続文字列 | `dbname_high` |
+| `OCI_COMPARTMENT_ID` | コンパートメント OCID | `ocid1.compartment...` |
+| `OCI_GENAI_ENDPOINT` | GenAI エンドポイント | `https://inference.generativeai.ap-osaka-1.oci.oraclecloud.com` |
+| `OCI_EMBED_MODEL` | Embedding モデル | `cohere.embed-v4.0` |
+| `OCI_LLM_MODEL` | LLM モデル | `cohere.command-a-03-2025` |
+| `OCI_BUCKET_NAME` | バケット名 | `your-bucket` |
+| `OCI_NAMESPACE` | Object Storage Namespace | `your-namespace` |
+| `CHUNK_SIZE` | チャンクサイズ | `500` |
+| `CHUNK_OVERLAP` | チャンクオーバーラップ | `50` |
+| `TOP_K` | 検索上位件数 | `5` |
+
+</details>
+
+## Usage
+
+### 1. `11_create_table.ipynb` - テーブル作成
+
+データベーススキーマを初期化
+- `source_documents` / `chunks` テーブル作成
+- テーブル構造の確認ユーティリティ付き
+
+### 2. `12_data_pipeline.ipynb` - データ取り込み
+
+Object Storage → Database へのパイプライン
+- サポート形式: PDF / TXT / CSV
+- 自動エンコーディング検出（UTF-8 / Shift-JIS）
+- チャンク分割 → Embedding → DB保存
+
+### 3. `13_rag.ipynb` - RAG実行・評価
+
+質問応答とパフォーマンス測定
+- ベクトル検索（COSINE距離）
+- 日本語Reranker適用
+- LLM回答生成
+- RAGAS評価（Faithfulness / Answer Correctness / Context Precision / Recall）
+
+## Architecture
+
+<details>
+<summary>技術仕様（クリックで展開）</summary>
+
+### Database Schema
+
+- `source_documents`: ドキュメントメタデータ
+- `chunks`: チャンクテキスト（CLOB）+ ベクトル（VECTOR）
+
+### Vector Search
+
+- COSINE距離による類似度計算
+- `VECTOR_DISTANCE()` 関数使用
+- 検索件数は `TOP_K` で調整
+
+### Timezone
+
+- デフォルト: `Asia/Tokyo`
+- `CAST(systimestamp AT TIME ZONE 'Asia/Tokyo' AS timestamp)`
+
+</details>
+
+## Licenses & Notices
+
+### Third-Party Models
+
+**Japanese Reranker**
+- [hotchpotch/japanese-reranker-base-v2](https://huggingface.co/hotchpotch/japanese-reranker-base-v2)
+- モデル本体は同梱せず、実行時に取得されます
+
+**OCI Generative AI**
+- Cohereモデルを利用（OCI/Cohereの利用規約に従ってください）
+
+### Disclaimer
+
+本サンプルは参考実装です。運用環境へ導入する場合は、セキュリティ・可用性・監査要件に合わせて十分な検証を実施してください。
+
+---
+
+**Built with Oracle Autonomous AI Database 26ai** ♥
