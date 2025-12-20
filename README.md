@@ -20,8 +20,8 @@
 **Automated Data Pipeline**
 Object Storage → チャンク化 → Embedding → DB保存まで自動化
 
-**Rerank & LLM Generation**
-日本語Rerankerによる精度向上 + Cohereモデルでの回答生成
+**Rerank & Multi-LLM Generation**
+日本語Rerankerによる精度向上 + 12種類のLLMモデルから選択可能
 
 **RAGAS Evaluation**
 FAQ一括評価でRAG品質を定量測定
@@ -124,8 +124,24 @@ Object Storage → Database へのパイプライン
 質問応答とパフォーマンス測定
 - ベクトル検索（COSINE距離）
 - 日本語Reranker適用
-- LLM回答生成
+- 12種類のLLMモデルから選択可能な回答生成
 - RAGAS評価（Faithfulness / Answer Correctness / Context Precision / Recall）
+
+#### 対応LLMモデル
+
+| モデルファミリー | モデルID |
+|----------------|----------|
+| **Cohere** | `cohere.command-a-03-2025` |
+| | `cohere.command-r-plus-08-2024` |
+| **Meta Llama** | `meta.llama-3.3-70b-instruct` |
+| **xAI Grok** | `xai.grok-4-fast-non-reasoning` |
+| | `xai.grok-4-fast-reasoning` |
+| | `xai.grok-4` |
+| **Google Gemini** | `google.gemini-2.5-pro` |
+| | `google.gemini-2.5-flash` |
+| | `google.gemini-2.5-flash-lite` |
+| **OpenAI GPT-OSS** | `openai.gpt-oss-20b` |
+| | `openai.gpt-oss-120b` |
 
 ## Architecture
 
@@ -159,7 +175,8 @@ Object Storage → Database へのパイプライン
 - モデル本体は同梱せず、実行時に取得されます
 
 **OCI Generative AI**
-- Cohereモデルを利用（OCI/Cohereの利用規約に従ってください）
+- 複数のLLMモデルを利用可能（Cohere, Meta Llama, xAI Grok, Google Gemini, OpenAI GPT-OSS）
+- 各モデルの利用規約に従ってください
 
 ### Disclaimer
 
