@@ -14,19 +14,34 @@
 
 ## Features
 
-**Vector Search on Oracle Database 26ai**
-ベクトル検索機能を使った高速な文書検索
+- **Vector Search on Oracle Database 26ai**
+  - ベクトル検索機能を使った高速な文書検索
 
-**Automated Data Pipeline**
-Object Storage → チャンク化 → Embedding → DB保存まで自動化
+- **Automated Data Pipeline**
+  - Object Storage → チャンク化 → Embedding → DB保存まで自動化
 
-**Rerank & Multi-LLM Generation**
-日本語Rerankerによる精度向上 + 12種類のLLMモデルから選択可能
+- **Rerank & Multi-LLM Generation**
+  - 日本語Rerankerによる精度向上 + 12種類のLLMモデルから選択可能
 
-**RAGAS Evaluation**
-FAQ一括評価でRAG品質を定量測定
+- **RAGAS Evaluation**
+  - FAQ一括評価でRAG品質を定量測定
 
-## Quick Start
+## Setup
+
+### 手動セットアップ
+
+OCI上に一からRAG環境を構築する場合は、以下の手順書を参照してください:
+
+📖 **[OCI手動構築ガイド](infra/oci-manual-setup-guide.md)**
+
+手順書に従って以下を構築します:
+- Virtual Cloud Network (VCN)
+- Autonomous AI Database 26ai
+- Object Storage
+- Data Science Notebook環境
+
+
+### Quick Start（環境構築済みの場合）
 
 ```bash
 # 1. 環境変数設定
@@ -44,19 +59,22 @@ cd setup && bash setup.sh
 
 ## Prerequisites
 
-- Oracle Autonomous AI Database 26ai
-- OCI リソースへのアクセス
-  - Object Storage
-  - Generative AI Service
-  - Data Science (Notebook環境)
+- OCIコンパートメント
+  - コンパートメントの管理権限が必要
+
+詳細は [infra/oci-manual-setup-guide.md](infra/oci-manual-setup-guide.md) を参照してください。
 
 ## Repository Structure
 
-```
+```bash
+infra/              # インフラ構築手順
+└── oci-manual-setup-guide.md
+
 notebooks/          # Jupyter Notebooks
 ├── 11_create_table.ipynb
 ├── 12_data_pipeline.ipynb
-└── 13_rag.ipynb
+├── 13_rag.ipynb
+└── config_loader.py
 
 setup/              # 環境構築
 ├── environment.yaml
@@ -89,18 +107,14 @@ key_file=~/.oci/oci_api_key.pem
 
 | 変数名 | 説明 | 例 |
 |--------|------|-----|
-| `DB_USERNAME` | DB ユーザー名 | `ADMIN` |
+| `DB_USERNAME` | DB ユーザー名 | `rag` |
 | `DB_PASSWORD` | DB パスワード | `YourPassword123` |
-| `DB_DSN` | DB 接続文字列 | `dbname_high` |
+| `DB_DSN` | DB 接続文字列 | `(description=...)` |
 | `OCI_COMPARTMENT_ID` | コンパートメント OCID | `ocid1.compartment...` |
-| `OCI_GENAI_ENDPOINT` | GenAI エンドポイント | `https://inference.generativeai.ap-osaka-1.oci.oraclecloud.com` |
-| `OCI_EMBED_MODEL` | Embedding モデル | `cohere.embed-v4.0` |
-| `OCI_LLM_MODEL` | LLM モデル | `cohere.command-a-03-2025` |
-| `OCI_BUCKET_NAME` | バケット名 | `your-bucket` |
-| `OCI_NAMESPACE` | Object Storage Namespace | `your-namespace` |
-| `CHUNK_SIZE` | チャンクサイズ | `500` |
-| `CHUNK_OVERLAP` | チャンクオーバーラップ | `50` |
-| `TOP_K` | 検索上位件数 | `5` |
+| `OCI_REGION` | リージョン名 | `us-chicago-1`, `ap-osaka-1` |
+| `OCI_BUCKET_NAME` | バケット名 | `rag-source` |
+
+**注:** エンドポイントはリージョン名から自動生成されます。LLM/Embeddingモデルはデフォルト値があります。
 
 </details>
 
@@ -128,6 +142,9 @@ Object Storage → Database へのパイプライン
 - RAGAS評価（Faithfulness / Answer Correctness / Context Precision / Recall）
 
 #### 対応LLMモデル
+- **注) Google Geminiモデルの利用時に出力が途切れて保存されてしまうBugがあります。**
+- まずは、`command-a` か `grok-4-fast-non-reasoning` の利用をおすすめします。
+- 各モデルごとの[利用料金](https://www.oracle.com/jp/cloud/price-list/#pricing-ai)を確認の上ご利用ください
 
 | モデルファミリー | モデルID |
 |----------------|----------|

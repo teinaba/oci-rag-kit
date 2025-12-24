@@ -98,24 +98,40 @@ def get_oci_config() -> Dict[str, Any]:
         raise ValueError(f"OCI設定の読み込みに失敗しました: {e}")
 
 
+def get_genai_endpoint_from_region(region: str) -> str:
+    """
+    リージョン名からGenerative AI ServiceのエンドポイントURLを生成
+
+    Args:
+        region: OCI リージョン名 (例: us-chicago-1, ap-osaka-1)
+
+    Returns:
+        エンドポイントURL
+    """
+    return f"https://inference.generativeai.{region}.oci.oraclecloud.com"
+
+
 def get_genai_config() -> Dict[str, str]:
     """
     OCI Generative AI Service設定を取得
-    
+
     Returns:
         dict: compartment_id, endpoint, embed_model, llm_modelを含む辞書
-        
+
     Raises:
         ValueError: 必須パラメータが設定されていない場合
     """
     compartment_id = os.getenv('OCI_COMPARTMENT_ID')
-    endpoint = os.getenv('OCI_GENAI_ENDPOINT')
-    
+    region = os.getenv('OCI_REGION')
+
     if not compartment_id:
         raise ValueError("OCI_COMPARTMENT_IDが設定されていません")
-    if not endpoint:
-        raise ValueError("OCI_GENAI_ENDPOINTが設定されていません")
-    
+    if not region:
+        raise ValueError("OCI_REGIONが設定されていません")
+
+    # リージョンからエンドポイントを自動生成
+    endpoint = get_genai_endpoint_from_region(region)
+
     return {
         'compartment_id': compartment_id,
         'endpoint': endpoint,
