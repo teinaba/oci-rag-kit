@@ -135,8 +135,8 @@ def get_genai_config() -> Dict[str, str]:
     return {
         'compartment_id': compartment_id,
         'endpoint': endpoint,
-        'embed_model': os.getenv('OCI_EMBED_MODEL', 'cohere.embed-multilingual-v3.0'),
-        'llm_model': os.getenv('OCI_LLM_MODEL', 'cohere.command-r-plus')
+        'embed_model': os.getenv('OCI_EMBED_MODEL', 'cohere.embed-v4.0'),
+        'llm_model': os.getenv('OCI_LLM_MODEL', 'cohere.command-a-03-2025')
     }
 
 
