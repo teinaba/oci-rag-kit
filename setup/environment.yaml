@@ -26,6 +26,8 @@ dependencies:
     
     # Jupyter
     - ipykernel
+    - ipywidgets
+    - jupyter
     
     # NLP & Transformers
     - protobuf
