@@ -36,6 +36,12 @@ wheels/
 .installed.cfg
 *.egg
 
+# テスト・カバレッジ
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
 # ========================================
 # Jupyter Notebook
 # ========================================
