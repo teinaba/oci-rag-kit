@@ -12,6 +12,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "notebooks"))
 
 from config_loader import (
+    ConfigLoader,
     load_config,
     get_db_connection_params,
     get_oci_config,
@@ -224,6 +225,11 @@ class TestLoadConfig:
     @pytest.mark.unit
     def test_env_file_in_current_directory(self, tmp_path, monkeypatch):
         """カレントディレクトリに.envがある場合"""
+        ConfigLoader._reset()  # Singletonの状態をリセット
+        # 既存のインスタンスも強制的にリセット
+        import config_loader
+        config_loader._default_config_loader = ConfigLoader()
+
         env_file = tmp_path / ".env"
         env_file.write_text("TEST_VAR=test_value\n")
 
@@ -239,6 +245,11 @@ class TestLoadConfig:
     @pytest.mark.unit
     def test_env_file_in_parent_directory(self, tmp_path, monkeypatch):
         """親ディレクトリに.envがある場合"""
+        ConfigLoader._reset()  # Singletonの状態をリセット
+        # 既存のインスタンスも強制的にリセット
+        import config_loader
+        config_loader._default_config_loader = ConfigLoader()
+
         env_file = tmp_path / ".env"
         env_file.write_text("TEST_VAR=test_value\n")
 
@@ -256,6 +267,11 @@ class TestLoadConfig:
     @pytest.mark.unit
     def test_env_file_not_found(self, tmp_path, monkeypatch):
         """.envファイルが見つからない場合"""
+        ConfigLoader._reset()  # Singletonの状態をリセット
+        # 既存のインスタンスも強制的にリセット
+        import config_loader
+        config_loader._default_config_loader = ConfigLoader()
+
         monkeypatch.chdir(tmp_path)
 
         with pytest.raises(FileNotFoundError, match=".envファイルが見つかりません"):
@@ -333,8 +349,9 @@ class TestGetGenaiClient:
             'endpoint': 'https://inference.generativeai.us-chicago-1.oci.oraclecloud.com'
         }
 
-        with patch('config_loader.get_oci_config', return_value=mock_oci_config):
-            with patch('config_loader.get_genai_config', return_value=mock_genai_config):
+        # _default_config_loaderのメソッドをモック
+        with patch.object(ConfigLoader, 'get_oci_config', return_value=mock_oci_config):
+            with patch.object(ConfigLoader, 'get_genai_config', return_value=mock_genai_config):
                 with patch('oci.generative_ai_inference.GenerativeAiInferenceClient') as mock_client_class:
                     mock_client = MagicMock()
                     mock_client_class.return_value = mock_client
@@ -356,7 +373,8 @@ class TestGetObjectStorageClient:
         """Object Storageクライアントの作成"""
         mock_oci_config = {'region': 'us-chicago-1'}
 
-        with patch('config_loader.get_oci_config', return_value=mock_oci_config):
+        # _default_config_loaderのメソッドをモック
+        with patch.object(ConfigLoader, 'get_oci_config', return_value=mock_oci_config):
             with patch('oci.object_storage.ObjectStorageClient') as mock_client_class:
                 mock_client = MagicMock()
                 mock_client_class.return_value = mock_client
