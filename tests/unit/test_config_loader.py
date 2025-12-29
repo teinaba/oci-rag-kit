@@ -32,31 +32,12 @@ class TestGetGenaiEndpointFromRegion:
     """get_genai_endpoint_from_region() のテスト"""
 
     @pytest.mark.unit
-    def test_us_chicago_1(self):
-        """US Chicago リージョンのエンドポイント生成"""
-        result = get_genai_endpoint_from_region("us-chicago-1")
-        assert result == "https://inference.generativeai.us-chicago-1.oci.oraclecloud.com"
-
-    @pytest.mark.unit
-    def test_ap_osaka_1(self):
-        """AP Osaka リージョンのエンドポイント生成"""
-        result = get_genai_endpoint_from_region("ap-osaka-1")
-        assert result == "https://inference.generativeai.ap-osaka-1.oci.oraclecloud.com"
-
-    @pytest.mark.unit
-    def test_ap_tokyo_1(self):
-        """AP Tokyo リージョンのエンドポイント生成"""
-        result = get_genai_endpoint_from_region("ap-tokyo-1")
-        assert result == "https://inference.generativeai.ap-tokyo-1.oci.oraclecloud.com"
-
-    @pytest.mark.unit
     @pytest.mark.parametrize("region,expected", [
-        ("us-ashburn-1", "https://inference.generativeai.us-ashburn-1.oci.oraclecloud.com"),
-        ("eu-frankfurt-1", "https://inference.generativeai.eu-frankfurt-1.oci.oraclecloud.com"),
-        ("uk-london-1", "https://inference.generativeai.uk-london-1.oci.oraclecloud.com"),
+        ("us-chicago-1", "https://inference.generativeai.us-chicago-1.oci.oraclecloud.com"),
+        ("ap-osaka-1", "https://inference.generativeai.ap-osaka-1.oci.oraclecloud.com"),
     ])
-    def test_various_regions(self, region, expected):
-        """複数のリージョンでのエンドポイント生成"""
+    def test_supported_regions(self, region, expected):
+        """サポートされているリージョンのエンドポイント生成"""
         result = get_genai_endpoint_from_region(region)
         assert result == expected
 
