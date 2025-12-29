@@ -1,0 +1,78 @@
+[project]
+name = "oci-rag-kit"
+version = "0.1.0"
+description = "Japanese RAG starter kit on Oracle Cloud Infrastructure"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    {name = "teina"}
+]
+keywords = ["rag", "oracle", "oci", "vector-search", "japanese", "llm"]
+
+dependencies = [
+    "oracledb>=2.0.0",
+    "oci>=2.135.2",
+    "langchain-community>=0.3.15",
+    "torch>=2.5.1",
+    "transformers>=4.48.0",
+    "sentence-transformers>=3.3.1",
+    "sentencepiece>=0.2.0",
+    "pymupdf>=1.25.2",
+    "pandas>=2.2.3",
+    "openpyxl>=3.1.5",
+    "numpy>=2.2.1",
+    "ragas>=0.2.9",
+    "datasets>=3.2.0",
+    "python-dotenv>=1.0.1",
+    "ipywidgets>=8.1.5",
+    "jupyter>=1.1.1",
+    "protobuf",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+]
+
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["notebooks"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--cov=notebooks",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+]
+
+[tool.coverage.run]
+source = ["notebooks"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
