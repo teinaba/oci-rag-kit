@@ -231,21 +231,48 @@ chmod 600 ~/.oci/config
   - TLS名: ragdb_high
 - [取消]を押下
 
-### 6.5. 設定ファイルの編集
+### 6.5. 設定ファイルの作成
 - Terminalで以下のコマンドを実行し、.envファイルを作成
+  - 手順6.1～6.4で取得した情報を使用
+  - メモ帳などで編集してからペーストすると効率的
 ```bash
 cd ~/oci-rag-kit
-cp .env.template .env
+
+cat > .env << 'EOF'
+# ========================================
+# Oracle Database Connection
+# ========================================
+DB_USERNAME=rag
+DB_PASSWORD=<4.2で設定したRAGユーザのパスワード>
+DB_DSN=<6.4で取得したデータベース接続文字列>
+
+# ========================================
+# OCI Authentication (Do not edit)
+# ========================================
+# Path to ~/.oci/config file (default: ~/.oci/config)
+OCI_CONFIG_FILE=~/.oci/config
+# Profile name to use (default: DEFAULT)
+OCI_PROFILE=DEFAULT
+
+# ========================================
+# OCI Generative AI Service
+# ========================================
+OCI_COMPARTMENT_ID=<6.3で取得したragコンパートメントのOCID>
+OCI_REGION=<使用するリージョン名（例: us-chicago-1, ap-osaka-1）>
+
+# ========================================
+# OCI Object Storage
+# ========================================
+OCI_BUCKET_NAME=rag-source
+EOF
+
+chmod 600 .env
 ```
-- viエディタで`.env`ファイルを開き、以下の項目を手順6.1～6.4で取得した情報で編集
-`vi .env`
-  - `DB_USERNAME`: データベースユーザ名（デフォルト: `rag`）
+- 編集が必要な項目（`< >`で囲まれた部分を置き換える）:
   - `DB_PASSWORD`: 4.2で設定したRAGユーザのパスワード
   - `DB_DSN`: 6.4で取得したデータベース接続文字列
   - `OCI_COMPARTMENT_ID`: 6.3で取得したragコンパートメントのOCID
-  - `OCI_REGION`: 使用するリージョン名
-    - 例: `us-chicago-1`, `ap-osaka-1`
-- 編集後、ファイルを保存
+  - `OCI_REGION`: 使用するリージョン名（例: `us-chicago-1`, `ap-osaka-1`）
 
 ## 7. Pythonコードの実行
 - [アナリティクスとAI] > [データ・サイエンス] > [rag_project] > [rag_notebook] > [開く]
