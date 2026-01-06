@@ -3,7 +3,6 @@ End-to-End tests for DataPipeline
 
 Tests the exact code flow from notebook 12_data_pipeline_v2.ipynb
 """
-import pytest
 from src.data_pipeline.document_loader import DocumentLoader
 from src.data_pipeline.text_extractor import TextExtractor
 from src.data_pipeline.text_chunker import TextChunker
@@ -13,7 +12,7 @@ from src.data_pipeline.data_pipeline import DataPipeline
 
 
 class TestNotebookMainFlow:
-    """Test the main flow from notebook Cell 0-20"""
+    """Test the main flow from notebook Cell 0-14"""
 
     def test_notebook_pipeline_execution(
         self,
@@ -24,17 +23,16 @@ class TestNotebookMainFlow:
         """
         Reproduce notebook 12_data_pipeline_v2.ipynb main execution flow
 
-        This test mirrors cells 0-20:
-        - Cell 0-2: Imports (handled by test setup)
-        - Cell 6: Configuration and DB connection
-        - Cell 8: Tuning parameters
-        - Cell 10: Component initialization
-        - Cell 12: DataPipeline orchestrator
-        - Cell 14: List files from Object Storage
-        - Cell 16: Process all files
-        - Cell 20: Close connection (handled by fixture)
+        This test mirrors cells 0-14:
+        - Cell 0-2: Header and Imports (handled by test setup)
+        - Cell 4: Configuration and DB connection
+        - Cell 6: Tuning parameters
+        - Cell 8: Component initialization + DataPipeline orchestrator (merged)
+        - Cell 10: List files from Object Storage
+        - Cell 12: Process all files
+        - Cell 14: Close connection (handled by fixture)
         """
-        # Cell 6: 設定の読み込みとDB接続
+        # Cell 4: 設定の読み込みとDB接続
         oci_config = config_loader.get_oci_config()
         os_config = config_loader.get_object_storage_config()
         bucket_name = os_config['bucket_name']
@@ -42,12 +40,12 @@ class TestNotebookMainFlow:
         os_client = config_loader.get_object_storage_client()
         namespace = os_client.get_namespace().data
 
-        # Cell 8: チューニングパラメータ
+        # Cell 6: チューニングパラメータ
         app_config = config_loader.get_app_config()
         chunk_size = app_config['chunk_size']
         chunk_overlap = app_config['chunk_overlap']
 
-        # Cell 10: コンポーネントの初期化
+        # Cell 8: コンポーネントの初期化 + DataPipelineオーケストレータの作成（統合）
         loader = DocumentLoader(
             oci_config=oci_config,
             bucket_name=bucket_name,
@@ -65,7 +63,7 @@ class TestNotebookMainFlow:
 
         writer = DocumentWriter(db_connection)
 
-        # Cell 12: DataPipelineオーケストレータの作成
+        # (Cell 8 continued: DataPipelineオーケストレータの作成)
         progress_records = []
 
         def progress_callback(filename: str, status: str):
@@ -81,15 +79,15 @@ class TestNotebookMainFlow:
             progress_callback=progress_callback
         )
 
-        # Cell 14: Object Storageからファイル一覧を取得
+        # Cell 10: Object Storageからファイル一覧を取得
         file_paths = loader.list_files()
 
         assert len(file_paths) > 0, "No files found in Object Storage"
 
-        # Cell 16: すべてのファイルを一括処理
+        # Cell 12: すべてのファイルを一括処理
         result = pipeline.process_all(file_paths)
 
-        # Display processing results (same as notebook Cell 16)
+        # Display processing results (same as notebook Cell 12)
         print("\n" + "="*60)
         print("Processing Complete")
         print("="*60)
@@ -156,4 +154,4 @@ class TestNotebookMainFlow:
             finally:
                 cursor.close()
 
-        # Cell 20: DB接続のクローズ (handled by fixture cleanup)
+        # Cell 14: DB接続のクローズ (handled by fixture cleanup)
