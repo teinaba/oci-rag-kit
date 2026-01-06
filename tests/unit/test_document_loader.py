@@ -93,6 +93,37 @@ class TestListFiles:
         assert files == []
 
     @patch('oci.object_storage.ObjectStorageClient')
+    def test_list_files_excludes_directories(self, mock_client_class):
+        """ディレクトリ（名前が"/"で終わるオブジェクト）が除外されることを確認"""
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+
+        # モックのレスポンス作成（ファイルとディレクトリを含む）
+        mock_file1 = Mock()
+        mock_file1.name = 'documents/file1.pdf'
+        mock_dir1 = Mock()
+        mock_dir1.name = 'documents/'  # ディレクトリ
+        mock_file2 = Mock()
+        mock_file2.name = 'manual/guide.txt'
+        mock_dir2 = Mock()
+        mock_dir2.name = 'manual/subfolder/'  # ディレクトリ
+
+        mock_response = Mock()
+        mock_response.data.objects = [mock_file1, mock_dir1, mock_file2, mock_dir2]
+        mock_client.list_objects.return_value = mock_response
+
+        # テスト実行
+        loader = DocumentLoader({'region': 'us-chicago-1'}, 'test-bucket', 'test-namespace')
+        files = loader.list_files()
+
+        # 検証: ファイルのみが含まれ、ディレクトリは除外される
+        assert len(files) == 2
+        assert 'documents/file1.pdf' in files
+        assert 'manual/guide.txt' in files
+        assert 'documents/' not in files  # ディレクトリは除外
+        assert 'manual/subfolder/' not in files  # ディレクトリは除外
+
+    @patch('oci.object_storage.ObjectStorageClient')
     def test_list_files_api_error(self, mock_client_class):
         """OCI APIエラーを適切にハンドリングすることを確認"""
         mock_client = Mock()

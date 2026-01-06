@@ -92,10 +92,12 @@ class DocumentLoader:
 
     def list_files(self) -> List[str]:
         """
-        バケット内の全ファイルパスを取得
+        バケット内の全ファイルパスを取得（ディレクトリを除外）
+
+        ディレクトリは名前が"/"で終わるオブジェクトとして判定され、除外されます。
 
         Returns:
-            ファイルパスのリスト
+            ファイルパスのリスト（ディレクトリを除く）
 
         Raises:
             DocumentLoaderError: ファイル一覧取得に失敗した場合
@@ -106,8 +108,12 @@ class DocumentLoader:
                 bucket_name=self.bucket_name
             )
 
-            # オブジェクト名のリストを抽出
-            files = [obj.name for obj in response.data.objects]
+            # ディレクトリを除外してファイルのみを抽出
+            # ディレクトリは名前が"/"で終わるオブジェクトとして判定
+            files = [
+                obj.name for obj in response.data.objects
+                if not obj.name.endswith('/')
+            ]
             return files
 
         except Exception as e:

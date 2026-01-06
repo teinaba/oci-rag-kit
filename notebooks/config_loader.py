@@ -33,6 +33,7 @@ class ConfigLoader:
 
     _instance: Optional['ConfigLoader'] = None
     _env_loaded: bool = False
+    _oci_config_cache: Optional[Dict[str, Any]] = None
 
     def __new__(cls) -> 'ConfigLoader':
         """
@@ -49,7 +50,7 @@ class ConfigLoader:
         Singletonのため、複数回呼ばれても問題ないように設計
         """
         # Singletonなので初期化済みかチェック不要
-        # 状態は _env_loaded で管理
+        # 状態は _env_loaded と _oci_config_cache で管理
         pass
 
     @classmethod
@@ -63,6 +64,7 @@ class ConfigLoader:
         """
         cls._instance = None
         cls._env_loaded = False
+        cls._oci_config_cache = None
 
     def load_env(self) -> None:
         """
@@ -132,6 +134,8 @@ class ConfigLoader:
         OCI認証設定を取得
         ~/.oci/configファイルから設定を読み込みます
 
+        一度読み込んだ設定はキャッシュされ、再利用されます。
+
         Returns:
             dict: OCI設定辞書
 
@@ -139,6 +143,10 @@ class ConfigLoader:
             FileNotFoundError: configファイルが見つからない場合
             ValueError: 設定の読み込みに失敗した場合
         """
+        # キャッシュがあればそれを返す
+        if self._oci_config_cache is not None:
+            return self._oci_config_cache
+
         config_file = os.getenv('OCI_CONFIG_FILE', '~/.oci/config')
         config_file = os.path.expanduser(config_file)
         profile = os.getenv('OCI_PROFILE', 'DEFAULT')
@@ -151,7 +159,10 @@ class ConfigLoader:
 
         try:
             config = oci.config.from_file(config_file, profile)
+            # 初回のみprintを出力
             print(f"✓ OCI設定を読み込みました: {config_file} [プロファイル: {profile}]")
+            # キャッシュに保存
+            self._oci_config_cache = config
             return config
         except Exception as e:
             raise ValueError(f"OCI設定の読み込みに失敗しました: {e}")
