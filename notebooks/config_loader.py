@@ -92,7 +92,7 @@ class ConfigLoader:
         if not env_file.exists():
             raise FileNotFoundError(
                 ".envファイルが見つかりません。\n"
-                "プロジェクトルートに.env.templateをコピーして.envを作成し、必要な値を設定してください。\n"
+                "infra/oci-manual-setup-guide.mdの手順6.5を参照して.envを作成してください。\n"
                 f"検索パス: {Path('.env').absolute()}, {(Path('..') / '.env').absolute()}"
             )
 
