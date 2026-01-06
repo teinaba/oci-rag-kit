@@ -238,3 +238,93 @@ class TestErrorHandling:
 
             with pytest.raises(TextExtractionError, match="test_file.txt"):
                 extractor.extract(b"content", "txt", "test_file.txt")
+
+
+class TestMimeTypeSupport:
+    """MIMEタイプサポートのテスト"""
+
+    def test_extract_with_mime_type_application_pdf(self):
+        """MIMEタイプ 'application/pdf' が正しく処理されることを確認"""
+        extractor = TextExtractor()
+        with patch.object(extractor, '_extract_pdf') as mock_pdf:
+            mock_pdf.return_value = ExtractedText(
+                content="PDF content",
+                filename="test.pdf",
+                content_type="pdf"
+            )
+
+            result = extractor.extract(b"pdf content", "application/pdf", "test.pdf")
+
+            mock_pdf.assert_called_once_with(b"pdf content", "test.pdf")
+            assert result.content == "PDF content"
+
+    def test_extract_with_mime_type_text_plain(self):
+        """MIMEタイプ 'text/plain' が正しく処理されることを確認"""
+        extractor = TextExtractor()
+        with patch.object(extractor, '_extract_text') as mock_text:
+            mock_text.return_value = ExtractedText(
+                content="Text content",
+                filename="test.txt",
+                content_type="txt",
+                encoding="utf-8"
+            )
+
+            result = extractor.extract(b"text content", "text/plain", "test.txt")
+
+            mock_text.assert_called_once_with(b"text content", "test.txt", "txt")
+            assert result.content == "Text content"
+
+    def test_extract_with_mime_type_text_csv(self):
+        """MIMEタイプ 'text/csv' が正しく処理されることを確認"""
+        extractor = TextExtractor()
+        with patch.object(extractor, '_extract_text') as mock_text:
+            mock_text.return_value = ExtractedText(
+                content="CSV content",
+                filename="test.csv",
+                content_type="csv",
+                encoding="utf-8"
+            )
+
+            result = extractor.extract(b"csv content", "text/csv", "test.csv")
+
+            mock_text.assert_called_once_with(b"csv content", "test.csv", "csv")
+            assert result.content == "CSV content"
+
+    def test_extract_with_mime_type_application_csv(self):
+        """MIMEタイプ 'application/csv' が正しく処理されることを確認"""
+        extractor = TextExtractor()
+        with patch.object(extractor, '_extract_text') as mock_text:
+            mock_text.return_value = ExtractedText(
+                content="CSV content",
+                filename="data.csv",
+                content_type="csv",
+                encoding="utf-8"
+            )
+
+            result = extractor.extract(b"csv content", "application/csv", "data.csv")
+
+            mock_text.assert_called_once_with(b"csv content", "data.csv", "csv")
+            assert result.content == "CSV content"
+
+    def test_extract_with_extension_still_works(self):
+        """従来の拡張子ベースの呼び出しも引き続き動作することを確認（後方互換性）"""
+        extractor = TextExtractor()
+        with patch.object(extractor, '_extract_pdf') as mock_pdf:
+            mock_pdf.return_value = ExtractedText(
+                content="PDF content",
+                filename="test.pdf",
+                content_type="pdf"
+            )
+
+            # 拡張子形式で呼び出し
+            result = extractor.extract(b"pdf content", "pdf", "test.pdf")
+
+            mock_pdf.assert_called_once()
+            assert result.content == "PDF content"
+
+    def test_extract_with_unsupported_mime_type(self):
+        """未サポートのMIMEタイプでエラーが発生することを確認"""
+        extractor = TextExtractor()
+
+        with pytest.raises(TextExtractionError, match="Unsupported file type: application/xyz"):
+            extractor.extract(b"unknown content", "application/xyz", "test.xyz")
