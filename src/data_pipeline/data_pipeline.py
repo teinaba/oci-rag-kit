@@ -167,7 +167,7 @@ class DataPipeline:
             )
 
             # Step 3: Chunk text
-            chunked = self.chunker.chunk(extracted.text)
+            chunked = self.chunker.chunk(extracted.content)
 
             # Handle empty chunks
             if not chunked.chunks:
@@ -196,7 +196,7 @@ class DataPipeline:
                 filtering=self._extract_filtering(doc_metadata.full_path),
                 content_type=self._extract_content_type(doc_metadata.content_type),
                 file_size=doc_metadata.file_size,
-                text_length=extracted.text_length
+                text_length=len(extracted.content)
             )
 
             # 5b. Save chunks with embeddings
