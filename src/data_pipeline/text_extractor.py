@@ -68,7 +68,8 @@ class TextExtractor:
 
         Args:
             content: バイナリコンテンツ
-            content_type: ファイルタイプ ('pdf', 'txt', 'csv')
+            content_type: ファイルタイプ（MIMEタイプまたは拡張子）
+                         例: 'application/pdf', 'text/plain', 'pdf', 'txt'
             filename: ファイル名（エラーメッセージ用）
 
         Returns:
@@ -77,11 +78,22 @@ class TextExtractor:
         Raises:
             TextExtractionError: 抽出に失敗した場合、または未サポート形式の場合
         """
+        # MIMEタイプを拡張子にマッピング
+        mime_to_ext = {
+            'application/pdf': 'pdf',
+            'text/plain': 'txt',
+            'text/csv': 'csv',
+            'application/csv': 'csv'
+        }
+
+        # MIMEタイプの場合は拡張子に変換、既に拡張子の場合はそのまま使用
+        file_ext = mime_to_ext.get(content_type, content_type)
+
         try:
-            if content_type == 'pdf':
+            if file_ext == 'pdf':
                 return self._extract_pdf(content, filename)
-            elif content_type in ('txt', 'csv'):
-                return self._extract_text(content, filename, content_type)
+            elif file_ext in ('txt', 'csv'):
+                return self._extract_text(content, filename, file_ext)
             else:
                 raise TextExtractionError(
                     f"Unsupported file type: {content_type}"
