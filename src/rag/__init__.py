@@ -6,6 +6,7 @@ RAGAS評価までの一連のRAG処理を提供します。
 """
 
 from .vector_searcher import VectorSearcher, SearchResult
+from .rag_pipeline import RAGPipeline, RAGResult, BatchResult
 from .excel_handler import ExcelHandler
 from .exceptions import (
     RAGError,
@@ -21,6 +22,9 @@ __all__ = [
     # Classes
     'VectorSearcher',
     'SearchResult',
+    'RAGPipeline',
+    'RAGResult',
+    'BatchResult',
     'ExcelHandler',
     # Exceptions
     'RAGError',
