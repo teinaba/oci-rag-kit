@@ -1,8 +1,8 @@
 """
-Unit tests for DocumentWriter class
+DocumentWriterクラスのユニットテスト
 
-This module contains comprehensive tests for the DocumentWriter class,
-which saves documents and chunks to Oracle Database.
+このモジュールは、ドキュメントとチャンクをOracle Databaseに
+保存するDocumentWriterクラスの包括的なテストを含みます。
 
 TDD（テスト駆動開発）アプローチで実装
 目標カバレッジ: 90-95%
@@ -44,7 +44,7 @@ class TestSaveDocument:
         mock_cursor = MagicMock()
         mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
 
-        # Mock the var() call
+        # var()呼び出しをモック
         mock_var = Mock()
         mock_var.getvalue.return_value = [b'test-document-id-bytes']
         mock_connection.cursor.return_value.var.return_value = mock_var
@@ -64,10 +64,10 @@ class TestSaveDocument:
         assert result.filename == 'test.pdf'
         assert result.content_type == 'pdf'
 
-        # Verify cursor.execute was called
+        # 検証 cursor.execute was called
         mock_cursor.execute.assert_called_once()
 
-        # Verify commit was called
+        # 検証 commit was called
         mock_connection.commit.assert_called_once()
 
     def test_save_document_executes_correct_sql(self):
@@ -90,7 +90,7 @@ class TestSaveDocument:
             text_length=1000
         )
 
-        # Check that SQL contains expected elements
+        # SQLに期待される要素が含まれていることを確認
         call_args = mock_cursor.execute.call_args
         sql = call_args[0][0]
 
@@ -119,7 +119,7 @@ class TestSaveDocument:
             text_length=250
         )
 
-        # Verify parameters passed to execute
+        # 検証 parameters passed to execute
         call_kwargs = mock_cursor.execute.call_args[1]
         assert call_kwargs['filename'] == 'test.csv'
         assert call_kwargs['filtering'] == 'data'
@@ -133,7 +133,7 @@ class TestSaveDocument:
         mock_cursor = MagicMock()
         mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
 
-        # Mock database error
+        # モック database error
         import oracledb
         db_error = oracledb.DatabaseError("ORA-00001: unique constraint violated")
         mock_cursor.execute.side_effect = db_error
@@ -149,7 +149,7 @@ class TestSaveDocument:
                 text_length=500
             )
 
-        # Verify exception chain
+        # 検証 exception chain
         assert exc_info.value.__cause__ is db_error
 
     def test_save_document_validates_required_parameters(self):
@@ -157,7 +157,7 @@ class TestSaveDocument:
         mock_connection = Mock()
         writer = DocumentWriter(mock_connection)
 
-        # Empty filename
+        # 空のファイル名
         with pytest.raises(DocumentWriteError, match="filename cannot be empty"):
             writer.save_document(
                 filename='',
@@ -167,7 +167,7 @@ class TestSaveDocument:
                 text_length=500
             )
 
-        # Empty content_type
+        # 空のcontent_type
         with pytest.raises(DocumentWriteError, match="content_type cannot be empty"):
             writer.save_document(
                 filename='test.pdf',
@@ -199,10 +199,10 @@ class TestSaveChunks:
         assert result.document_id == document_id
         assert result.chunk_count == 3
 
-        # Verify execute was called 3 times
+        # 検証 execute was called 3 times
         assert mock_cursor.execute.call_count == 3
 
-        # Verify commit was called
+        # 検証 commit was called
         mock_connection.commit.assert_called_once()
 
     def test_save_chunks_executes_correct_sql(self):
@@ -243,13 +243,13 @@ class TestSaveChunks:
 
         writer.save_chunks(document_id, chunks, embeddings)
 
-        # Verify first call
+        # 検証 first call
         first_call_kwargs = mock_cursor.execute.call_args_list[0][1]
         assert first_call_kwargs['document_id'] == document_id
         assert first_call_kwargs['chunk_text'] == 'chunk1'
         assert first_call_kwargs['embedding'] == '[0.1, 0.2]'
 
-        # Verify second call
+        # 検証 second call
         second_call_kwargs = mock_cursor.execute.call_args_list[1][1]
         assert second_call_kwargs['chunk_text'] == 'chunk2'
         assert second_call_kwargs['embedding'] == '[0.3, 0.4]'
@@ -290,7 +290,7 @@ class TestSaveChunks:
         mock_cursor = MagicMock()
         mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
 
-        # Mock database error
+        # モック database error
         import oracledb
         db_error = oracledb.DatabaseError("ORA-02291: foreign key constraint violated")
         mock_cursor.execute.side_effect = db_error
@@ -300,7 +300,7 @@ class TestSaveChunks:
         with pytest.raises(DocumentWriteError) as exc_info:
             writer.save_chunks(b'invalid-doc-id', ['chunk1'], ['[0.1]'])
 
-        # Verify exception chain
+        # 検証 exception chain
         assert exc_info.value.__cause__ is db_error
 
 

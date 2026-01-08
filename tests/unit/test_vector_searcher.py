@@ -170,7 +170,7 @@ class TestSearch:
     @patch('langchain_community.embeddings.OCIGenAIEmbeddings')
     def test_search_without_filtering(self, mock_embeddings_class, mock_connect):
         """フィルタリングなしの検索が正常に動作することを確認"""
-        # Embedder mock
+        # Embedderをモック
         mock_embeddings = Mock()
         mock_embeddings.embed_query.return_value = [0.1, 0.2, 0.3]
         mock_embeddings_class.return_value = mock_embeddings
@@ -181,7 +181,7 @@ class TestSearch:
         mock_connection.cursor.return_value = mock_cursor
         mock_connect.return_value = mock_connection
 
-        # Mock CLOB data
+        # CLOBデータをモック
         mock_clob = Mock()
         mock_clob.read.return_value = "チャンクテキスト1"
 
@@ -216,7 +216,7 @@ class TestSearch:
     @patch('langchain_community.embeddings.OCIGenAIEmbeddings')
     def test_search_with_filtering(self, mock_embeddings_class, mock_connect):
         """フィルタリング指定時の検索が正常に動作することを確認"""
-        # Embedder mock
+        # Embedderをモック
         mock_embeddings = Mock()
         mock_embeddings.embed_query.return_value = [0.1, 0.2, 0.3]
         mock_embeddings_class.return_value = mock_embeddings
@@ -253,7 +253,7 @@ class TestSearch:
     @patch('langchain_community.embeddings.OCIGenAIEmbeddings')
     def test_search_returns_empty_list_when_no_results(self, mock_embeddings_class, mock_connect):
         """検索結果が0件の場合に空リストが返されることを確認"""
-        # Embedder mock
+        # Embedderをモック
         mock_embeddings = Mock()
         mock_embeddings.embed_query.return_value = [0.1, 0.2, 0.3]
         mock_embeddings_class.return_value = mock_embeddings
@@ -282,7 +282,7 @@ class TestSearch:
     @patch('langchain_community.embeddings.OCIGenAIEmbeddings')
     def test_search_raises_error_on_db_connection_failure(self, mock_embeddings_class, mock_connect):
         """DB接続失敗時にVectorSearchErrorが発生することを確認"""
-        # Embedder mock
+        # Embedderをモック
         mock_embeddings = Mock()
         mock_embeddings.embed_query.return_value = [0.1, 0.2, 0.3]
         mock_embeddings_class.return_value = mock_embeddings

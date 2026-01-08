@@ -49,7 +49,7 @@ class TextChunker:
         >>> print(f"Chunks: {result.chunk_count}")
     """
 
-    # Class constant - Japanese-aware separators
+    # クラス定数 - 日本語対応セパレータ
     DEFAULT_SEPARATORS = ["\n\n", "\n", "。", "、", " ", ""]
 
     def __init__(
@@ -69,7 +69,7 @@ class TextChunker:
         Raises:
             ValueError: パラメータが無効な場合
         """
-        # Parameter validation
+        # パラメータのバリデーション
         if chunk_size <= 0:
             raise ValueError(f"chunk_size must be > 0, got {chunk_size}")
         if chunk_overlap < 0:
@@ -116,13 +116,13 @@ class TextChunker:
             ChunkingError: チャンク化に失敗した場合
         """
         try:
-            # Input validation
+            # 入力のバリデーション
             if not isinstance(text, str):
                 raise ChunkingError(
                     f"Input must be str, got {type(text).__name__}"
                 )
 
-            # Handle empty text
+            # 空のテキストを処理
             if not text:
                 self.logger.warning("Empty text provided for chunking")
                 return ChunkedText(
@@ -134,10 +134,10 @@ class TextChunker:
                     avg_chunk_length=0.0
                 )
 
-            # Execute chunking
+            # チャンク化を実行
             chunks = self.splitter.split_text(text)
 
-            # Calculate statistics
+            # 統計情報を計算
             avg_length = (
                 sum(len(c) for c in chunks) / len(chunks) if chunks else 0.0
             )

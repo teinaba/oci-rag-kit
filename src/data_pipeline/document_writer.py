@@ -96,7 +96,7 @@ class DocumentWriter:
             DocumentWriteError: 保存に失敗した場合
         """
         try:
-            # Validate required parameters
+            # 必須パラメータのバリデーション
             if not filename:
                 raise DocumentWriteError("filename cannot be empty")
             if not content_type:
@@ -121,7 +121,7 @@ class DocumentWriter:
                 RETURNING document_id INTO :document_id
             """
 
-            # Create output variable for RETURNING clause
+            # RETURNING句用の出力変数を作成
             document_id_var = self.connection.cursor().var(oracledb.DB_TYPE_RAW)
 
             with self.connection.cursor() as cursor:
@@ -175,14 +175,14 @@ class DocumentWriter:
             DocumentWriteError: 保存に失敗した場合
         """
         try:
-            # Validate input
+            # 入力のバリデーション
             if len(chunks) != len(embeddings):
                 raise DocumentWriteError(
                     f"chunks and embeddings must have the same length "
                     f"(got {len(chunks)} chunks and {len(embeddings)} embeddings)"
                 )
 
-            # Handle empty lists
+            # 空のリストを処理
             if not chunks:
                 self.logger.info("No chunks to save (empty list)")
                 return SavedChunks(

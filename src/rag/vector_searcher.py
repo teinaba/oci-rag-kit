@@ -95,7 +95,7 @@ class VectorSearcher:
         self.compartment_id = compartment_id
         self.service_endpoint = service_endpoint
         self.top_k = top_k
-        self._embedder = None  # Lazy initialization
+        self._embedder = None  # 遅延初期化
 
     @property
     def embedder(self):

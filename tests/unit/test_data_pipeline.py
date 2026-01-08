@@ -1,8 +1,8 @@
 """
-Unit tests for DataPipeline orchestrator class
+DataPipelineオーケストレータクラスのユニットテスト
 
-This module contains comprehensive tests for the DataPipeline class,
-which orchestrates the entire data ingestion pipeline.
+このモジュールは、データ取り込みパイプライン全体を統括する
+DataPipelineクラスの包括的なテストを含みます。
 
 TDD（テスト駆動開発）アプローチで実装
 目標カバレッジ: 90-95%
@@ -117,7 +117,7 @@ class TestProcessSingle:
 
     def test_process_single_success(self):
         """単一ファイルの正常処理を確認"""
-        # Setup mocks
+        # モックをセットアップ
         loader = Mock()
         loader.download_file.return_value = Mock(
             filename='test.pdf',
@@ -162,10 +162,10 @@ class TestProcessSingle:
             writer=writer
         )
 
-        # Execute
+        # 実行
         result = pipeline.process_single('docs/test.pdf')
 
-        # Verify
+        # 検証
         assert isinstance(result, ProcessedDocument)
         assert result.filename == 'test.pdf'
         assert result.status == 'success'
@@ -173,7 +173,7 @@ class TestProcessSingle:
         assert result.chunks_saved == 3
         assert result.error is None
 
-        # Verify component calls
+        # 検証 component calls
         loader.download_file.assert_called_once_with('docs/test.pdf')
         extractor.extract.assert_called_once()
         chunker.chunk.assert_called_once()
@@ -327,7 +327,7 @@ class TestProcessAll:
 
     def test_process_all_multiple_files_success(self):
         """複数ファイルの正常処理を確認"""
-        # Setup mocks for successful processing
+        # モックをセットアップ for successful processing
         loader = Mock()
         loader.download_file.side_effect = [
             Mock(filename='file1.pdf', full_path='folder/file1.pdf', content=b'c1', content_type='application/pdf', file_size=100),
@@ -367,10 +367,10 @@ class TestProcessAll:
             writer=writer
         )
 
-        # Execute
+        # 実行
         result = pipeline.process_all(['path1.pdf', 'path2.txt'])
 
-        # Verify
+        # 検証
         assert isinstance(result, PipelineResult)
         assert result.total_files == 2
         assert result.successful == 2

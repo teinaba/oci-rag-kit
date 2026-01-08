@@ -1,7 +1,7 @@
 """
-End-to-End tests for DataPipeline
+DataPipelineのエンドツーエンドテスト
 
-Tests the exact code flow from notebook 12_data_pipeline_v2.ipynb
+ノートブック 12_data_pipeline_v2.ipynb の正確なコードフローをテストします。
 """
 from src.data_pipeline.document_loader import DocumentLoader
 from src.data_pipeline.text_extractor import TextExtractor
@@ -32,7 +32,7 @@ class TestNotebookMainFlow:
         - Cell 12: Process all files
         - Cell 14: Close connection (handled by fixture)
         """
-        # Cell 4: 設定の読み込みとDB接続
+        # セル4: 設定の読み込みとDB接続
         oci_config = config_loader.get_oci_config()
         os_config = config_loader.get_object_storage_config()
         bucket_name = os_config['bucket_name']
@@ -40,12 +40,12 @@ class TestNotebookMainFlow:
         os_client = config_loader.get_object_storage_client()
         namespace = os_client.get_namespace().data
 
-        # Cell 6: チューニングパラメータ
+        # セル6: チューニングパラメータ
         app_config = config_loader.get_app_config()
         chunk_size = app_config['chunk_size']
         chunk_overlap = app_config['chunk_overlap']
 
-        # Cell 8: コンポーネントの初期化 + DataPipelineオーケストレータの作成（統合）
+        # セル8: コンポーネントの初期化 + DataPipelineオーケストレータの作成（統合）
         loader = DocumentLoader(
             oci_config=oci_config,
             bucket_name=bucket_name,

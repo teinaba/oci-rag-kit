@@ -1,8 +1,8 @@
 """
-Unit tests for TextChunker class
+TextChunkerクラスのユニットテスト
 
-This module contains comprehensive tests for the TextChunker class,
-which splits text into chunks using Japanese-aware separators.
+このモジュールは、日本語対応セパレータを使用してテキストを
+チャンクに分割するTextChunkerクラスの包括的なテストを含みます。
 
 TDD（テスト駆動開発）アプローチで実装
 目標カバレッジ: 90-95%
@@ -23,18 +23,18 @@ class TestTextChunkerInit:
         assert chunker.chunk_overlap == 50
         assert chunker.separators == TextChunker.DEFAULT_SEPARATORS
         assert chunker.logger is not None
-        assert chunker._splitter is None  # Lazy initialization
+        assert chunker._splitter is None  # 遅延初期化
 
     def test_custom_chunk_size_initialization(self):
         """カスタムchunk_sizeで初期化できることを確認"""
         chunker = TextChunker(chunk_size=1000)
         assert chunker.chunk_size == 1000
-        assert chunker.chunk_overlap == 50  # Default
+        assert chunker.chunk_overlap == 50  # デフォルト
 
     def test_custom_chunk_overlap_initialization(self):
         """カスタムchunk_overlapで初期化できることを確認"""
         chunker = TextChunker(chunk_overlap=100)
-        assert chunker.chunk_size == 500  # Default
+        assert chunker.chunk_size == 500  # デフォルト
         assert chunker.chunk_overlap == 100
 
     def test_custom_both_parameters_initialization(self):
@@ -81,7 +81,7 @@ class TestChunk:
 
         assert isinstance(result, ChunkedText)
         assert result.chunk_count > 0
-        assert result.chunks == result.chunks  # Ensure chunks exist
+        assert result.chunks == result.chunks  # チャンクが存在することを確認
         assert result.original_text_length == len(text)
         assert result.chunk_size == 50
         assert result.chunk_overlap == 5
@@ -100,7 +100,7 @@ class TestChunk:
     def test_chunk_short_text_returns_single_chunk(self):
         """chunk_sizeより短いテキストで単一チャンクが返されることを確認"""
         chunker = TextChunker(chunk_size=100, chunk_overlap=10)
-        text = "短いテキスト"  # 7 chars < 100
+        text = "短いテキスト"  # 7文字 < 100
 
         result = chunker.chunk(text)
 
@@ -111,7 +111,7 @@ class TestChunk:
     def test_chunk_calculates_correct_metadata(self):
         """メタデータが正しく計算されることを確認"""
         chunker = TextChunker(chunk_size=20, chunk_overlap=5)
-        text = "1234567890" * 10  # 100 chars
+        text = "1234567890" * 10  # 100文字
 
         result = chunker.chunk(text)
 
@@ -125,23 +125,23 @@ class TestChunk:
     def test_chunk_avg_chunk_length_calculation(self):
         """平均チャンク長が正しく計算されることを確認"""
         chunker = TextChunker(chunk_size=10, chunk_overlap=0)
-        text = "12345678901234567890"  # 20 chars → 2 chunks of 10 each
+        text = "12345678901234567890"  # 20文字 → 10文字ずつ2チャンク
 
         result = chunker.chunk(text)
 
-        # Average should be around 10
+        # 平均は約10になるはず
         assert result.avg_chunk_length == pytest.approx(10.0, abs=5.0)
 
     def test_chunk_respects_chunk_size(self):
         """チャンクがchunk_sizeを大きく超えないことを確認"""
         chunker = TextChunker(chunk_size=100, chunk_overlap=10)
-        text = "あいうえお" * 50  # 250 chars
+        text = "あいうえお" * 50  # 250文字
 
         result = chunker.chunk(text)
 
-        # Most chunks should be around chunk_size (allowing some variance for separators)
+        # ほとんどのチャンクはchunk_size前後になるはず（セパレータ処理の余裕を含む）
         for chunk in result.chunks:
-            assert len(chunk) <= 150  # Allow 50% variance for separator handling
+            assert len(chunk) <= 150  # セパレータ処理のため50%の余裕を許容
 
     def test_chunk_with_japanese_text(self):
         """日本語テキストが正しくチャンク化されることを確認"""
@@ -161,7 +161,7 @@ class TestChunk:
 
         result = chunker.chunk(text)
 
-        # With overlap=0, concatenating chunks should give original (roughly)
+        # overlap=0の場合、チャンクを結合すれば元のテキストになるはず（おおよそ）
         concatenated = "".join(result.chunks)
         assert concatenated == text
 
@@ -179,11 +179,11 @@ class TestLazyInitialization:
         """初回アクセス時にsplitterが初期化されることを確認"""
         chunker = TextChunker(chunk_size=100, chunk_overlap=10)
 
-        # Access via property
+        # プロパティ経由でアクセス
         splitter = chunker.splitter
 
         assert splitter is not None
-        assert chunker._splitter is splitter  # Cached
+        assert chunker._splitter is splitter  # キャッシュされている
 
     def test_splitter_reused_on_subsequent_calls(self):
         """2回目以降のアクセスでsplitterが再利用されることを確認"""
@@ -192,7 +192,7 @@ class TestLazyInitialization:
         splitter1 = chunker.splitter
         splitter2 = chunker.splitter
 
-        assert splitter1 is splitter2  # Same instance
+        assert splitter1 is splitter2  # 同じインスタンス
 
     @patch('src.data_pipeline.text_chunker.RecursiveCharacterTextSplitter')
     def test_splitter_configuration(self, mock_splitter_class):
@@ -201,7 +201,7 @@ class TestLazyInitialization:
         mock_splitter_class.return_value = mock_instance
 
         chunker = TextChunker(chunk_size=100, chunk_overlap=20)
-        _ = chunker.splitter  # Trigger lazy init
+        _ = chunker.splitter  # 遅延初期化をトリガー
 
         mock_splitter_class.assert_called_once_with(
             chunk_size=100,
@@ -219,20 +219,20 @@ class TestErrorHandling:
         chunker = TextChunker()
 
         with pytest.raises(ChunkingError, match="Input must be str"):
-            chunker.chunk(123)  # type: ignore
+            chunker.chunk(123)  # type: ignore  # noqa
 
     def test_chunk_none_input_raises_error(self):
         """None入力でChunkingErrorが発生することを確認"""
         chunker = TextChunker()
 
         with pytest.raises(ChunkingError, match="Input must be str"):
-            chunker.chunk(None)  # type: ignore
+            chunker.chunk(None)  # type: ignore  # noqa
 
     def test_chunk_preserves_exception_chain(self):
         """例外チェーンが保持されることを確認"""
         chunker = TextChunker()
 
-        # Mock the internal _splitter directly
+        # 内部の_splitterを直接モック
         mock_splitter = Mock()
         original_error = ValueError("Splitter error")
         mock_splitter.split_text.side_effect = original_error
@@ -241,14 +241,14 @@ class TestErrorHandling:
         with pytest.raises(ChunkingError) as exc_info:
             chunker.chunk("test text")
 
-        # Exception chain preserved
+        # 例外チェーンが保持されている
         assert exc_info.value.__cause__ is original_error
 
     def test_chunk_error_includes_text_length(self):
         """エラーメッセージにテキスト長が含まれることを確認"""
         chunker = TextChunker()
 
-        # Mock the internal _splitter directly
+        # 内部の_splitterを直接モック
         mock_splitter = Mock()
         mock_splitter.split_text.side_effect = Exception("Test error")
         chunker._splitter = mock_splitter
@@ -267,7 +267,7 @@ class TestJapaneseTextHandling:
 
         result = chunker.chunk(text)
 
-        # Should split on 。
+        # 。で分割されるはず
         assert result.chunk_count >= 1
 
     def test_chunk_japanese_text_with_commas(self):
@@ -295,7 +295,7 @@ class TestJapaneseTextHandling:
 
         result = chunker.chunk(text)
 
-        # Paragraph breaks should be primary split points
+        # 段落区切りが主要な分割ポイントになるはず
         assert result.chunk_count >= 1
 
     def test_mixed_japanese_english_text(self):

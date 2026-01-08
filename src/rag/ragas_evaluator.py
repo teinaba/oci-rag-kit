@@ -117,7 +117,7 @@ class RagasEvaluator:
         self.max_retries = max_retries
         self.retry_wait = retry_wait
 
-        # Lazy initialization
+        # 遅延初期化
         self._llm = None
         self._embeddings = None
 

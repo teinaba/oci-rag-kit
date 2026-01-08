@@ -10,7 +10,7 @@ import logging
 import sys
 from pathlib import Path
 
-# Add notebooks directory to path for config_loader import
+# config_loaderインポートのためにnotebooksディレクトリをパスに追加
 notebooks_path = Path(__file__).parent.parent.parent / 'notebooks'
 if str(notebooks_path) not in sys.path:
     sys.path.insert(0, str(notebooks_path))
@@ -65,7 +65,7 @@ class EmbeddingGenerator:
         """
         self.logger = logging.getLogger(__name__)
 
-        # Load configuration
+        # 設定を読み込み
         config = ConfigLoader()
         genai_config = config.get_genai_config()
 
@@ -110,21 +110,21 @@ class EmbeddingGenerator:
             EmbeddingError: 埋め込み生成に失敗した場合
         """
         try:
-            # Input validation
+            # 入力のバリデーション
             if not isinstance(text, str):
                 raise EmbeddingError(
                     f"Input must be str, got {type(text).__name__}"
                 )
 
-            # Handle empty text
+            # 空のテキストを処理
             if not text:
                 raise EmbeddingError("Input text cannot be empty")
 
-            # Generate embedding
+            # 埋め込みベクトルを生成
             self.logger.debug(f"Generating embedding for text (length={len(text)})")
             embedding_list = self.embedder.embed_query(text)
 
-            # Convert to string format for Oracle VECTOR type
+            # Oracle VECTOR型用の文字列形式に変換
             vector_str = str(embedding_list)
             dimension = len(embedding_list)
 
