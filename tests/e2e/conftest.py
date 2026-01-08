@@ -5,6 +5,7 @@ Provides real OCI and Oracle Database connections for end-to-end testing.
 """
 import pytest
 import oracledb
+import pandas as pd
 import sys
 import os
 
@@ -86,5 +87,36 @@ def cleanup_test_documents(db_connection):
             db_connection.rollback()
         finally:
             cursor.close()
+
+
+@pytest.fixture
+def test_faq_dataframe():
+    """
+    Test FAQ DataFrame for RAG E2E tests
+
+    Provides a small sample FAQ dataset with all required columns:
+    - id: Question ID
+    - question: Question text
+    - ground_truth: Expected answer
+    - filter: Source type filter (optional)
+
+    Scope: function - creates a new DataFrame for each test
+    """
+    faq_data = {
+        'id': [1, 2, 3],
+        'question': [
+            'Oracle Databaseとは何ですか？',
+            'ベクトル検索の利点は何ですか？',
+            'RAGシステムの主要なコンポーネントは何ですか？'
+        ],
+        'ground_truth': [
+            'Oracle Databaseは、Oracle Corporationが開発したリレーショナルデータベース管理システムです。',
+            'ベクトル検索は、セマンティック検索を可能にし、キーワードマッチングよりも意味的に関連性の高い結果を返します。',
+            'RAGシステムは、ベクトル検索、リランキング、LLM生成の3つの主要なコンポーネントで構成されています。'
+        ],
+        'filter': ['', '', '']  # Empty filters for this test
+    }
+
+    return pd.DataFrame(faq_data)
 
 
