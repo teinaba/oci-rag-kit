@@ -115,6 +115,7 @@ class VectorSearcher:
                     service_endpoint=self.service_endpoint,
                     compartment_id=self.compartment_id,
                     auth_type="API_KEY",
+                    client=self.genai_client,
                     model_kwargs={"input_type": "search_query"}
                 )
             except Exception as e:

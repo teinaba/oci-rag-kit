@@ -215,6 +215,71 @@ class TestGetObjectStorageConfig:
             assert result['namespace'] == 'test-namespace'
 
 
+class TestGetFaqBucketName:
+    """ConfigLoader.get_faq_bucket_name() のテスト"""
+
+    @pytest.mark.unit
+    def test_faq_bucket_name_set(self):
+        """OCI_FAQ_BUCKET_NAMEが設定されている場合"""
+        with patch.dict(os.environ, {
+            'OCI_FAQ_BUCKET_NAME': 'faq-bucket'
+        }, clear=True):
+            loader = ConfigLoader()
+            result = loader.get_faq_bucket_name()
+            assert result == 'faq-bucket'
+
+    @pytest.mark.unit
+    def test_fallback_to_bucket_name(self):
+        """OCI_FAQ_BUCKET_NAMEが未設定でOCI_BUCKET_NAMEにフォールバック"""
+        with patch.dict(os.environ, {
+            'OCI_BUCKET_NAME': 'default-bucket'
+        }, clear=True):
+            loader = ConfigLoader()
+            result = loader.get_faq_bucket_name()
+            assert result == 'default-bucket'
+
+    @pytest.mark.unit
+    def test_both_set_faq_takes_priority(self):
+        """両方設定されている場合、OCI_FAQ_BUCKET_NAMEが優先される"""
+        with patch.dict(os.environ, {
+            'OCI_FAQ_BUCKET_NAME': 'faq-bucket',
+            'OCI_BUCKET_NAME': 'default-bucket'
+        }, clear=True):
+            loader = ConfigLoader()
+            result = loader.get_faq_bucket_name()
+            assert result == 'faq-bucket'
+
+    @pytest.mark.unit
+    def test_neither_set(self):
+        """どちらも設定されていない場合、空文字列を返す"""
+        with patch.dict(os.environ, {}, clear=True):
+            loader = ConfigLoader()
+            result = loader.get_faq_bucket_name()
+            assert result == ''
+
+
+class TestGetFaqObjectName:
+    """ConfigLoader.get_faq_object_name() のテスト"""
+
+    @pytest.mark.unit
+    def test_custom_faq_object_name(self):
+        """OCI_FAQ_OBJECT_NAMEが設定されている場合"""
+        with patch.dict(os.environ, {
+            'OCI_FAQ_OBJECT_NAME': 'custom_faq.xlsx'
+        }, clear=True):
+            loader = ConfigLoader()
+            result = loader.get_faq_object_name()
+            assert result == 'custom_faq.xlsx'
+
+    @pytest.mark.unit
+    def test_default_faq_object_name(self):
+        """OCI_FAQ_OBJECT_NAMEが未設定の場合、デフォルト値を返す"""
+        with patch.dict(os.environ, {}, clear=True):
+            loader = ConfigLoader()
+            result = loader.get_faq_object_name()
+            assert result == 'faq.xlsx'
+
+
 # =============================================================================
 # ファイルシステム操作のテスト
 # =============================================================================

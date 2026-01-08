@@ -220,6 +220,27 @@ class ConfigLoader:
             'namespace': os.getenv('OCI_NAMESPACE', '')
         }
 
+    def get_faq_bucket_name(self) -> str:
+        """
+        FAQ用Object Storageバケット名を取得
+
+        OCI_FAQ_BUCKET_NAMEが設定されていればそれを返し、
+        なければOCI_BUCKET_NAMEにフォールバック
+
+        Returns:
+            str: FAQファイル用バケット名
+        """
+        return os.getenv('OCI_FAQ_BUCKET_NAME', os.getenv('OCI_BUCKET_NAME', ''))
+
+    def get_faq_object_name(self) -> str:
+        """
+        FAQファイル名を取得
+
+        Returns:
+            str: FAQファイル名（デフォルト: faq.xlsx）
+        """
+        return os.getenv('OCI_FAQ_OBJECT_NAME', 'faq.xlsx')
+
     def get_app_config(self) -> Dict[str, Any]:
         """
         アプリケーション設定を取得
