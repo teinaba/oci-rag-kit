@@ -1,12 +1,12 @@
 """
-Unit tests for RagasEvaluator class
+RagasEvaluatorクラスのユニットテスト
 
-Tests cover:
-- Constructor validation
-- Evaluate method with batch processing
-- Custom finished_parser for OCI Cohere Chat
-- Error handling
-- Lazy initialization of LLM and embeddings
+テストカバレッジ:
+- コンストラクタのバリデーション
+- バッチ処理付き評価メソッド
+- OCI Cohere Chat用のカスタムfinished_parser
+- エラーハンドリング
+- LLMと埋め込みの遅延初期化
 """
 
 import pytest
@@ -61,7 +61,7 @@ class TestRagasEvaluator:
         }
 
     # ========================================
-    # Constructor Tests
+    # コンストラクタのテスト
     # ========================================
 
     def test_constructor_valid_params(self, valid_params):
@@ -76,8 +76,8 @@ class TestRagasEvaluator:
         assert evaluator.batch_size == 3
         assert evaluator.max_retries == 3
         assert evaluator.retry_wait == 30
-        assert evaluator._llm is None  # Lazy initialization
-        assert evaluator._embeddings is None  # Lazy initialization
+        assert evaluator._llm is None  # 遅延初期化
+        assert evaluator._embeddings is None  # 遅延初期化
 
     def test_constructor_missing_oci_config(self, valid_params):
         """Test constructor raises ValueError when oci_config is missing"""
@@ -122,7 +122,7 @@ class TestRagasEvaluator:
             RagasEvaluator(**valid_params)
 
     # ========================================
-    # Lazy Initialization Tests
+    # 遅延初期化のテスト
     # ========================================
 
     @patch('src.rag.ragas_evaluator.ChatOCIGenAI')
@@ -131,20 +131,20 @@ class TestRagasEvaluator:
         """Test LLM is lazily initialized on first access"""
         evaluator = RagasEvaluator(**valid_params)
 
-        # Initially None
+        # 初期値はNone
         assert evaluator._llm is None
 
-        # Access triggers initialization
+        # アクセスによって初期化がトリガーされる
         _ = evaluator.llm
 
-        # Verify ChatOCIGenAI was created with correct parameters
+        # 検証 ChatOCIGenAI was created with correct parameters
         assert mock_chat.called
         call_kwargs = mock_chat.call_args[1]
         assert call_kwargs['model_id'] == 'cohere.command-a-03-2025'
         assert call_kwargs['compartment_id'] == 'ocid1.compartment.oc1..test'
         assert call_kwargs['service_endpoint'] == valid_params['service_endpoint']
 
-        # Verify LangchainLLMWrapper was created
+        # 検証 LangchainLLMWrapper was created
         assert mock_wrapper.called
 
     @patch('src.rag.ragas_evaluator.OCIGenAIEmbeddings')
@@ -153,29 +153,29 @@ class TestRagasEvaluator:
         """Test embeddings are lazily initialized on first access"""
         evaluator = RagasEvaluator(**valid_params)
 
-        # Initially None
+        # 初期値はNone
         assert evaluator._embeddings is None
 
-        # Access triggers initialization
+        # アクセスによって初期化がトリガーされる
         _ = evaluator.embeddings
 
-        # Verify OCIGenAIEmbeddings was created
+        # 検証 OCIGenAIEmbeddings was created
         assert mock_embeddings.called
         call_kwargs = mock_embeddings.call_args[1]
         assert call_kwargs['model_id'] == 'cohere.embed-v4.0'
 
-        # Verify LangchainEmbeddingsWrapper was created
+        # 検証 LangchainEmbeddingsWrapper was created
         assert mock_wrapper.called
 
     # ========================================
-    # Finished Parser Tests
+    # Finished Parserのテスト
     # ========================================
 
     def test_finished_parser_complete(self, valid_params):
         """Test finished_parser returns True for COMPLETE finish_reason"""
         evaluator = RagasEvaluator(**valid_params)
 
-        # Mock LLMResult with COMPLETE finish_reason
+        # モック LLMResult with COMPLETE finish_reason
         mock_result = MagicMock()
         mock_result.generations = [[MagicMock()]]
         mock_result.generations[0][0].generation_info = {'finish_reason': 'COMPLETE'}
@@ -187,7 +187,7 @@ class TestRagasEvaluator:
         """Test finished_parser returns False for non-COMPLETE finish_reason"""
         evaluator = RagasEvaluator(**valid_params)
 
-        # Mock LLMResult with non-COMPLETE finish_reason
+        # モック LLMResult with non-COMPLETE finish_reason
         mock_result = MagicMock()
         mock_result.generations = [[MagicMock()]]
         mock_result.generations[0][0].generation_info = {'finish_reason': 'STOP'}
@@ -199,7 +199,7 @@ class TestRagasEvaluator:
         """Test finished_parser returns False when no generations"""
         evaluator = RagasEvaluator(**valid_params)
 
-        # Mock LLMResult with empty generations
+        # モック LLMResult with empty generations
         mock_result = MagicMock()
         mock_result.generations = []
 
@@ -207,7 +207,7 @@ class TestRagasEvaluator:
         assert parser(mock_result) is False
 
     # ========================================
-    # Evaluate Method Tests
+    # evaluateメソッドのテスト
     # ========================================
 
     @patch('src.rag.ragas_evaluator.evaluate')
@@ -226,7 +226,7 @@ class TestRagasEvaluator:
         """Test successful evaluation"""
         evaluator = RagasEvaluator(**valid_params)
 
-        # Mock RAGAS evaluate result
+        # モック RAGAS evaluate result
         mock_result = MagicMock()
         mock_df = pd.DataFrame({
             'answer_correctness': [0.9, 0.8, 0.85],
@@ -235,7 +235,7 @@ class TestRagasEvaluator:
         mock_result.to_pandas.return_value = mock_df
         mock_ragas_evaluate.return_value = mock_result
 
-        # Execute
+        # 実行
         result = evaluator.evaluate(
             questions=sample_evaluation_data['questions'],
             answers=sample_evaluation_data['answers'],
@@ -243,23 +243,23 @@ class TestRagasEvaluator:
             ground_truths=sample_evaluation_data['ground_truths']
         )
 
-        # Verify
+        # 検証
         assert isinstance(result, EvaluationResult)
         assert len(result.answer_correctness) == 3
         assert len(result.context_recall) == 3
         assert result.answer_correctness[0] == 0.9
         assert result.context_recall[0] == 0.95
 
-        # Verify Dataset.from_dict was called
+        # 検証 Dataset.from_dict was called
         assert mock_dataset.from_dict.called
         dataset_arg = mock_dataset.from_dict.call_args[0][0]
         assert dataset_arg['question'] == sample_evaluation_data['questions']
 
-        # Verify metrics were created
+        # 検証 metrics were created
         assert mock_answer_correctness.called
         assert mock_context_recall.called
 
-        # Verify ragas evaluate was called
+        # 検証 ragas evaluate was called
         assert mock_ragas_evaluate.called
 
     @patch('src.rag.ragas_evaluator.evaluate')
@@ -274,10 +274,10 @@ class TestRagasEvaluator:
         """Test evaluation error handling"""
         evaluator = RagasEvaluator(**valid_params)
 
-        # Mock RAGAS evaluate to raise error
+        # モック RAGAS evaluate to raise error
         mock_ragas_evaluate.side_effect = Exception("RAGAS evaluation failed")
 
-        # Execute and verify exception
+        # 実行 and verify exception
         with pytest.raises(EvaluationError, match="Failed to evaluate"):
             evaluator.evaluate(
                 questions=sample_evaluation_data['questions'],
@@ -296,11 +296,11 @@ class TestRagasEvaluator:
         sample_evaluation_data
     ):
         """Test evaluation respects custom batch_size"""
-        # Set custom batch_size
+        # カスタムbatch_sizeを設定
         valid_params['batch_size'] = 5
         evaluator = RagasEvaluator(**valid_params)
 
-        # Mock result
+        # モック result
         mock_result = MagicMock()
         mock_df = pd.DataFrame({
             'answer_correctness': [0.9] * 3,
@@ -309,7 +309,7 @@ class TestRagasEvaluator:
         mock_result.to_pandas.return_value = mock_df
         mock_ragas_evaluate.return_value = mock_result
 
-        # Execute
+        # 実行
         result = evaluator.evaluate(
             questions=sample_evaluation_data['questions'],
             answers=sample_evaluation_data['answers'],
@@ -317,12 +317,12 @@ class TestRagasEvaluator:
             ground_truths=sample_evaluation_data['ground_truths']
         )
 
-        # Verify batch_size is stored correctly
+        # 検証 batch_size is stored correctly
         assert evaluator.batch_size == 5
         assert isinstance(result, EvaluationResult)
 
     # ========================================
-    # Input Validation Tests
+    # 入力検証のテスト
     # ========================================
 
     def test_evaluate_mismatched_lengths(self, valid_params):

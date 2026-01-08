@@ -1,8 +1,8 @@
 """
-Data Pipeline Orchestrator
+データパイプライン オーケストレータ
 
-This module coordinates all data pipeline components to process documents
-from Object Storage through to database storage.
+このモジュールは、Object Storageからデータベースストレージまでの
+ドキュメント処理において、すべてのデータパイプラインコンポーネントを調整します。
 """
 from dataclasses import dataclass
 from typing import List, Optional, Callable, Any
@@ -26,14 +26,14 @@ from .exceptions import (
 @dataclass
 class ProcessedDocument:
     """
-    Single document processing result
+    単一ドキュメントの処理結果
 
     Attributes:
-        filename: Document filename
-        status: Processing status ('success' | 'failed' | 'skipped')
-        document_id: Generated document ID (bytes) or None
-        chunks_saved: Number of chunks saved
-        error: Error message if failed, None otherwise
+        filename: ドキュメントのファイル名
+        status: 処理ステータス ('success' | 'failed' | 'skipped')
+        document_id: 生成されたドキュメントID（bytes）、またはNone
+        chunks_saved: 保存されたチャンク数
+        error: 失敗時のエラーメッセージ、成功時はNone
     """
     filename: str
     status: str
@@ -45,16 +45,16 @@ class ProcessedDocument:
 @dataclass
 class PipelineResult:
     """
-    Overall pipeline execution result
+    パイプライン全体の実行結果
 
     Attributes:
-        total_files: Total number of files processed
-        successful: Number of successfully processed files
-        failed: Number of failed files
-        skipped: Number of skipped files
-        total_chunks: Total chunks created across all files
-        processed_docs: List of individual document results
-        elapsed_time: Total processing time in seconds
+        total_files: 処理されたファイルの総数
+        successful: 正常に処理されたファイル数
+        failed: 失敗したファイル数
+        skipped: スキップされたファイル数
+        total_chunks: 全ファイルで生成された総チャンク数
+        processed_docs: 個別のドキュメント結果のリスト
+        elapsed_time: 総処理時間（秒）
     """
     total_files: int
     successful: int
@@ -67,20 +67,20 @@ class PipelineResult:
 
 class DataPipeline:
     """
-    Data pipeline orchestrator that coordinates all components
+    すべてのコンポーネントを調整するデータパイプライン オーケストレータ
 
-    This class orchestrates the entire data ingestion pipeline:
-    1. DocumentLoader - Download from Object Storage
-    2. TextExtractor - Extract text from PDF/TXT/CSV
-    3. TextChunker - Split into chunks
-    4. EmbeddingGenerator - Generate embeddings
-    5. DocumentWriter - Save to database
+    このクラスは、データ取り込みパイプライン全体を統括します：
+    1. DocumentLoader - Object Storageからのダウンロード
+    2. TextExtractor - PDF/TXT/CSVからテキスト抽出
+    3. TextChunker - チャンクへの分割
+    4. EmbeddingGenerator - 埋め込みベクトルの生成
+    5. DocumentWriter - データベースへの保存
 
-    Design:
-    - NOT Singleton: Multiple pipelines with different configs
-    - Composition: Uses all 5 component classes
-    - Error Isolation: Continue processing even if one file fails
-    - Progress Tracking: Optional callback for monitoring
+    設計:
+    - NOT Singleton: 異なる設定で複数のパイプライン可能
+    - Composition: 5つのコンポーネントクラスすべてを使用
+    - Error Isolation: 1つのファイルが失敗しても処理を継続
+    - Progress Tracking: 監視用のオプションのコールバック
 
     Example:
         >>> loader = DocumentLoader(oci_config, bucket, namespace)
@@ -112,18 +112,18 @@ class DataPipeline:
         progress_callback: Optional[Callable[[str, str], None]] = None
     ):
         """
-        Initialize DataPipeline orchestrator
+        DataPipelineオーケストレータを初期化
 
         Args:
-            loader: DocumentLoader instance
-            extractor: TextExtractor instance
-            chunker: TextChunker instance
-            embedding_gen: EmbeddingGenerator instance
-            writer: DocumentWriter instance
-            progress_callback: Optional callback(filename, status)
+            loader: DocumentLoaderインスタンス
+            extractor: TextExtractorインスタンス
+            chunker: TextChunkerインスタンス
+            embedding_gen: EmbeddingGeneratorインスタンス
+            writer: DocumentWriterインスタンス
+            progress_callback: オプションのコールバック(filename, status)
 
         Raises:
-            ValueError: If any required component is None
+            ValueError: 必須コンポーネントがNoneの場合
         """
         if loader is None:
             raise ValueError("loader is required")
@@ -146,30 +146,30 @@ class DataPipeline:
 
     def process_single(self, file_path: str) -> ProcessedDocument:
         """
-        Process a single document through the pipeline
+        パイプラインを通じて単一ドキュメントを処理
 
         Args:
-            file_path: Object Storage file path
+            file_path: Object Storageのファイルパス
 
         Returns:
-            ProcessedDocument: Processing result with status and metadata
+            ProcessedDocument: ステータスとメタデータを含む処理結果
         """
         try:
-            # Step 1: Download from Object Storage
+            # ステップ1: Object Storageからダウンロード
             self.logger.info(f"Processing: {file_path}")
             doc_metadata = self.loader.download_file(file_path)
 
-            # Step 2: Extract text
+            # ステップ2: テキスト抽出
             extracted = self.extractor.extract(
                 content=doc_metadata.content,
                 filename=doc_metadata.filename,
                 content_type=doc_metadata.content_type
             )
 
-            # Step 3: Chunk text
+            # ステップ3: テキストをチャンク化
             chunked = self.chunker.chunk(extracted.content)
 
-            # Handle empty chunks
+            # 空のチャンクを処理
             if not chunked.chunks:
                 self.logger.warning(f"No chunks created for {doc_metadata.filename}")
                 result = ProcessedDocument(
@@ -183,14 +183,14 @@ class DataPipeline:
                     self.progress_callback(doc_metadata.filename, 'skipped')
                 return result
 
-            # Step 4: Generate embeddings
+            # ステップ4: 埋め込みベクトル生成
             embeddings = []
             for chunk in chunked.chunks:
                 embedding = self.embedding_gen.embed_query(chunk)
                 embeddings.append(embedding.vector_str)
 
-            # Step 5: Save to database
-            # 5a. Save document metadata
+            # ステップ5: データベースへの保存
+            # 5a. ドキュメントメタデータを保存
             saved_doc = self.writer.save_document(
                 filename=doc_metadata.filename,
                 filtering=self._extract_filtering(doc_metadata.full_path),
@@ -199,7 +199,7 @@ class DataPipeline:
                 text_length=len(extracted.content)
             )
 
-            # 5b. Save chunks with embeddings
+            # 5b. チャンクと埋め込みベクトルを保存
             saved_chunks = self.writer.save_chunks(
                 document_id=saved_doc.document_id,
                 chunks=chunked.chunks,
@@ -224,7 +224,7 @@ class DataPipeline:
             return result
 
         except TextExtractionError as e:
-            # Unsupported file type - skip
+            # サポートされていないファイルタイプ - スキップ
             filename = file_path.split('/')[-1]
             self.logger.warning(f"Skipping {filename}: {str(e)}")
             result = ProcessedDocument(
@@ -239,7 +239,7 @@ class DataPipeline:
             return result
 
         except (DocumentLoaderError, ChunkingError, EmbeddingError, DocumentWriteError) as e:
-            # Known pipeline errors - mark as failed
+            # 既知のパイプラインエラー - 失敗としてマーク
             filename = file_path.split('/')[-1]
             self.logger.error(f"Failed to process {filename}: {str(e)}")
             result = ProcessedDocument(
@@ -254,7 +254,7 @@ class DataPipeline:
             return result
 
         except Exception as e:
-            # Unexpected error - mark as failed
+            # 予期しないエラー - 失敗としてマーク
             filename = file_path.split('/')[-1]
             self.logger.error(f"Unexpected error processing {filename}: {str(e)}")
             result = ProcessedDocument(
@@ -270,13 +270,13 @@ class DataPipeline:
 
     def process_all(self, file_paths: List[str]) -> PipelineResult:
         """
-        Process multiple documents through the pipeline
+        パイプラインを通じて複数ドキュメントを処理
 
         Args:
-            file_paths: List of Object Storage file paths
+            file_paths: Object Storageのファイルパスのリスト
 
         Returns:
-            PipelineResult: Overall processing statistics and results
+            PipelineResult: 全体的な処理統計と結果
         """
         start_time = time.time()
 
@@ -320,13 +320,13 @@ class DataPipeline:
 
     def _extract_filtering(self, full_path: str) -> str:
         """
-        Extract filtering (folder name) from full path
+        フルパスからフィルタリング（フォルダ名）を抽出
 
         Args:
-            full_path: Full Object Storage path (e.g., 'folder/file.pdf')
+            full_path: Object Storageのフルパス（例: 'folder/file.pdf'）
 
         Returns:
-            Folder name or empty string
+            フォルダ名、または空文字列
         """
         parts = full_path.split('/')
         if len(parts) > 1:
@@ -335,15 +335,15 @@ class DataPipeline:
 
     def _extract_content_type(self, mime_type: str) -> str:
         """
-        Extract simple content type from MIME type
+        MIMEタイプからシンプルなコンテンツタイプを抽出
 
         Args:
-            mime_type: MIME type (e.g., 'application/pdf')
+            mime_type: MIMEタイプ（例: 'application/pdf'）
 
         Returns:
-            Simple type (e.g., 'pdf')
+            シンプルなタイプ（例: 'pdf'）
         """
-        # Map common MIME types
+        # 一般的なMIMEタイプをマッピング
         mime_map = {
             'application/pdf': 'pdf',
             'text/plain': 'txt',

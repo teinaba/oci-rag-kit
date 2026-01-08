@@ -1,7 +1,7 @@
 """
-Shared fixtures for E2E tests
+E2Eテスト用の共有フィクスチャ
 
-Provides real OCI and Oracle Database connections for end-to-end testing.
+エンドツーエンドテスト用に実際のOCIとOracle Database接続を提供します。
 """
 import pytest
 import oracledb
@@ -9,7 +9,7 @@ import pandas as pd
 import sys
 import os
 
-# Add project root to Python path
+# プロジェクトルートをPythonパスに追加
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -59,8 +59,8 @@ def cleanup_test_documents(db_connection):
         def test_example(cleanup_test_documents):
             result = pipeline.process_single('test.pdf')
             cleanup_test_documents.append(result.document_id)
-            # Test assertions...
-            # Cleanup happens automatically after test
+            # テストのアサーション...
+            # テスト後に自動的にクリーンアップされる
     """
     document_ids = []
 
@@ -71,12 +71,12 @@ def cleanup_test_documents(db_connection):
         cursor = db_connection.cursor()
         try:
             for doc_id in document_ids:
-                # Delete chunks first (foreign key constraint)
+                # 外部キー制約のため、最初にチャンクを削除
                 cursor.execute(
                     "DELETE FROM chunks WHERE document_id = :id",
                     id=doc_id
                 )
-                # Delete document
+                # ドキュメントを削除
                 cursor.execute(
                     "DELETE FROM source_documents WHERE document_id = :id",
                     id=doc_id

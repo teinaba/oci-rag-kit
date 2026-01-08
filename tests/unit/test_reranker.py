@@ -143,7 +143,7 @@ class TestRerank:
     @patch('sentence_transformers.CrossEncoder')
     def test_rerank_returns_ranked_chunks(self, mock_cross_encoder_class):
         """リランクが正常に動作し、RankedChunkのリストが返されることを確認"""
-        # Mock CrossEncoder
+        # CrossEncoderをモック
         mock_model = Mock()
         mock_model.predict.return_value = [0.8, 0.3, 0.9]
         mock_cross_encoder_class.return_value = mock_model
@@ -206,7 +206,7 @@ class TestRerank:
     @patch('sentence_transformers.CrossEncoder')
     def test_rerank_fallback_on_prediction_error(self, mock_cross_encoder_class):
         """予測エラー時にフォールバック（distance順）されることを確認"""
-        # Mock CrossEncoder with error
+        # CrossEncoderをモック with error
         mock_model = Mock()
         mock_model.predict.side_effect = Exception("Prediction error")
         mock_cross_encoder_class.return_value = mock_model

@@ -1,7 +1,7 @@
 """
-End-to-End tests for RAG Pipeline
+RAG Pipelineのエンドツーエンドテスト
 
-Tests the exact code flow from notebook 13_rag_v2.ipynb
+ノートブック 13_rag_v2.ipynb の正確なコードフローをテストします。
 """
 from unittest.mock import Mock, patch
 import pandas as pd
@@ -36,7 +36,7 @@ class TestNotebookRAGFlow:
         - Cell 12: Process all questions
         - Cell 14: Close connection (handled by fixture)
         """
-        # Cell 4: 設定の読み込みとDB接続
+        # セル4: 設定の読み込みとDB接続
         db_params = config_loader.get_db_params()
         oci_config = config_loader.get_oci_config()
         genai_config = config_loader.get_genai_config()
@@ -55,7 +55,7 @@ class TestNotebookRAGFlow:
 
         genai_client = config_loader.get_genai_client()
 
-        # Cell 6: RAGパラメータ設定
+        # セル6: RAGパラメータ設定
         TOP_K = 10
         RERANK_ENABLED = True
         RERANK_TOP_N = 5
@@ -70,7 +70,7 @@ class TestNotebookRAGFlow:
 回答は簡潔に平文で記載してください。
 """
 
-        # Cell 8: RAGコンポーネント初期化
+        # セル8: RAGコンポーネント初期化
         # Phase 1: VectorSearcher
         searcher = VectorSearcher(
             db_params=db_params,

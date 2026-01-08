@@ -1,8 +1,8 @@
 """
-Unit tests for EmbeddingGenerator class
+EmbeddingGeneratorクラスのユニットテスト
 
-This module contains comprehensive tests for the EmbeddingGenerator class,
-which generates embeddings using OCI Generative AI Service.
+このモジュールは、OCI Generative AI Serviceを使用して埋め込みベクトルを
+生成するEmbeddingGeneratorクラスの包括的なテストを含みます。
 
 TDD（テスト駆動開発）アプローチで実装
 目標カバレッジ: 90-95%
@@ -32,7 +32,7 @@ class TestEmbeddingGeneratorInit:
             assert generator.compartment_id == 'test-compartment'
             assert generator.service_endpoint == 'https://test.endpoint.com'
             assert generator.logger is not None
-            assert generator._embedder is None  # Lazy initialization
+            assert generator._embedder is None  # 遅延初期化
 
     def test_custom_model_initialization(self):
         """カスタムモデルIDで初期化できることを確認"""
@@ -82,7 +82,7 @@ class TestEmbedQuery:
 
             generator = EmbeddingGenerator()
 
-            # Mock the embedder
+            # モック the embedder
             mock_embedder = Mock()
             mock_embedder.embed_query.return_value = [0.1, 0.2, 0.3]
             generator._embedder = mock_embedder
@@ -106,7 +106,7 @@ class TestEmbedQuery:
 
             generator = EmbeddingGenerator()
 
-            # Mock the embedder
+            # モック the embedder
             mock_embedder = Mock()
             mock_embedder.embed_query.return_value = [0.5, 0.6]
             generator._embedder = mock_embedder
@@ -173,7 +173,7 @@ class TestEmbedQuery:
 
             generator = EmbeddingGenerator()
 
-            # Mock the embedder
+            # モック the embedder
             mock_embedder = Mock()
             test_vector = [0.123, 0.456, 0.789]
             mock_embedder.embed_query.return_value = test_vector
@@ -181,7 +181,7 @@ class TestEmbedQuery:
 
             result = generator.embed_query("test")
 
-            # Vector should be string representation
+            # ベクトルは string representation
             assert result.vector_str == str(test_vector)
             assert result.vector_str.startswith("[")
             assert result.vector_str.endswith("]")
@@ -220,11 +220,11 @@ class TestLazyInitialization:
 
             generator = EmbeddingGenerator()
 
-            # Access via property
+            # プロパティ経由でアクセス
             embedder = generator.embedder
 
             assert embedder is not None
-            assert generator._embedder is embedder  # Cached
+            assert generator._embedder is embedder  # キャッシュd
             mock_embeddings_class.assert_called_once()
 
     @patch('src.data_pipeline.embedding_generator.OCIGenAIEmbeddings')
@@ -245,7 +245,7 @@ class TestLazyInitialization:
             embedder1 = generator.embedder
             embedder2 = generator.embedder
 
-            assert embedder1 is embedder2  # Same instance
+            assert embedder1 is embedder2  # 同じインスタンス
             assert mock_embeddings_class.call_count == 1  # Only called once
 
 
@@ -264,7 +264,7 @@ class TestErrorHandling:
 
             generator = EmbeddingGenerator()
 
-            # Mock the embedder to raise an exception
+            # モック the embedder to raise an exception
             mock_embedder = Mock()
             original_error = Exception("API connection failed")
             mock_embedder.embed_query.side_effect = original_error
@@ -273,7 +273,7 @@ class TestErrorHandling:
             with pytest.raises(EmbeddingError) as exc_info:
                 generator.embed_query("test text")
 
-            # Exception chain preserved
+            # 例外チェーンが保持されている
             assert exc_info.value.__cause__ is original_error
 
     def test_error_message_includes_text_preview(self):
@@ -288,7 +288,7 @@ class TestErrorHandling:
 
             generator = EmbeddingGenerator()
 
-            # Mock the embedder to raise an exception
+            # モック the embedder to raise an exception
             mock_embedder = Mock()
             mock_embedder.embed_query.side_effect = Exception("Test error")
             generator._embedder = mock_embedder

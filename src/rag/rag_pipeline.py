@@ -1,8 +1,8 @@
 """
-RAG Pipeline Orchestrator
+RAGパイプライン オーケストレータ
 
-This module coordinates all RAG components to process questions
-from FAQ through to answer generation and evaluation.
+このモジュールは、FAQから回答生成および評価まで、
+すべてのRAGコンポーネントを調整して質問を処理します。
 """
 
 from dataclasses import dataclass
@@ -20,17 +20,17 @@ from .exceptions import RAGError, EvaluationError
 @dataclass
 class RAGResult:
     """
-    Single question RAG processing result
+    単一質問のRAG処理結果
 
     Attributes:
-        question: Input question
-        answer: Generated answer
-        contexts: Context texts used for generation
-        vector_search_time: Vector search duration (seconds)
-        rerank_time: Reranking duration (seconds)
-        generation_time: LLM generation duration (seconds)
-        total_time: Total processing time (seconds)
-        model_used: LLM model ID used for generation
+        question: 入力質問
+        answer: 生成された回答
+        contexts: 生成に使用されたコンテキストテキスト
+        vector_search_time: ベクトル検索時間（秒）
+        rerank_time: リランキング時間（秒）
+        generation_time: LLM生成時間（秒）
+        total_time: 総処理時間（秒）
+        model_used: 生成に使用されたLLMモデルID
     """
     question: str
     answer: str
@@ -45,14 +45,14 @@ class RAGResult:
 @dataclass
 class BatchResult:
     """
-    Batch processing result
+    バッチ処理結果
 
     Attributes:
-        total_questions: Total number of questions processed
-        successful: Number of successfully processed questions
-        failed: Number of failed questions
-        results_df: DataFrame containing all results
-        elapsed_time: Total processing time (seconds)
+        total_questions: 処理された質問の総数
+        successful: 正常に処理された質問数
+        failed: 失敗した質問数
+        results_df: すべての結果を含むDataFrame
+        elapsed_time: 総処理時間（秒）
     """
     total_questions: int
     successful: int
@@ -63,19 +63,19 @@ class BatchResult:
 
 class RAGPipeline:
     """
-    RAG pipeline orchestrator that coordinates all components
+    すべてのコンポーネントを調整するRAGパイプライン オーケストレータ
 
-    This class orchestrates the entire RAG pipeline:
-    1. VectorSearcher - Vector similarity search
-    2. JapaneseReranker - Rerank search results (optional)
-    3. AnswerGenerator - Generate answers with LLM
-    4. RagasEvaluator - Evaluate quality (optional)
+    このクラスは、RAGパイプライン全体を統括します：
+    1. VectorSearcher - ベクトル類似度検索
+    2. JapaneseReranker - 検索結果のリランキング（オプション）
+    3. AnswerGenerator - LLMによる回答生成
+    4. RagasEvaluator - 品質評価（オプション）
 
-    Design:
-    - NOT Singleton: Multiple pipelines with different configs
-    - Composition: Uses all RAG component classes
-    - Error Isolation: Continue processing even if one question fails
-    - Progress Tracking: Optional callback for monitoring
+    設計:
+    - NOT Singleton: 異なる設定で複数のパイプライン可能
+    - Composition: すべてのRAGコンポーネントクラスを使用
+    - Error Isolation: 1つの質問が失敗しても処理を継続
+    - Progress Tracking: 監視用のオプションのコールバック
 
     Example:
         >>> searcher = VectorSearcher(db_params, embedding_model, genai_client)
@@ -90,14 +90,14 @@ class RAGPipeline:
         ...     evaluator=evaluator
         ... )
         >>>
-        >>> # Single question processing
+        >>> # 単一質問の処理
         >>> result = pipeline.process_single("質問文")
         >>>
-        >>> # Batch processing
+        >>> # バッチ処理
         >>> faq_df = pd.DataFrame({'question': ['Q1', 'Q2'], 'filter': ['', '']})
         >>> batch_result = pipeline.process_batch(faq_df)
         >>>
-        >>> # Evaluation
+        >>> # 評価
         >>> evaluated_df = pipeline.evaluate(batch_result.results_df, ['GT1', 'GT2'])
     """
 
@@ -113,17 +113,17 @@ class RAGPipeline:
         progress_callback: Optional[Callable[[str], None]] = None
     ):
         """
-        Initialize RAGPipeline
+        RAGPipelineを初期化
 
         Args:
-            searcher: VectorSearcher instance
-            reranker: JapaneseReranker instance
-            generator: AnswerGenerator instance
-            evaluator: RagasEvaluator instance (optional)
-            enable_reranking: Enable reranking (default: True)
-            top_k: Number of vector search results (default: 10)
-            rerank_top_n: Number of results after reranking (default: 5)
-            progress_callback: Progress notification callback (optional)
+            searcher: VectorSearcherインスタンス
+            reranker: JapaneseRerankerインスタンス
+            generator: AnswerGeneratorインスタンス
+            evaluator: RagasEvaluatorインスタンス（オプション）
+            enable_reranking: リランキングを有効化（デフォルト: True）
+            top_k: ベクトル検索結果数（デフォルト: 10）
+            rerank_top_n: リランキング後の結果数（デフォルト: 5）
+            progress_callback: 進捗通知コールバック（オプション）
         """
         self.searcher = searcher
         self.reranker = reranker
@@ -141,18 +141,18 @@ class RAGPipeline:
         **generator_params
     ) -> RAGResult:
         """
-        Process a single question
+        単一質問を処理
 
         Args:
-            question: Question text
-            filtering: Source type filter
-            **generator_params: LLM generation parameters (model, temperature, etc.)
+            question: 質問テキスト
+            filtering: ソース種別フィルタ
+            **generator_params: LLM生成パラメータ（model, temperatureなど）
 
         Returns:
-            RAGResult: Processing result
+            RAGResult: 処理結果
 
         Raises:
-            RAGError: If processing fails
+            RAGError: 処理に失敗した場合
         """
         # 全体の処理時間計測開始
         start_time = time.time()
@@ -222,14 +222,14 @@ class RAGPipeline:
         **generator_params
     ) -> BatchResult:
         """
-        Process batch questions
+        バッチ質問を処理
 
         Args:
-            questions_df: Questions DataFrame (must have 'question' column, optional 'filter' column)
-            **generator_params: LLM generation parameters
+            questions_df: 質問DataFrame（'question'列が必須、'filter'列はオプション）
+            **generator_params: LLM生成パラメータ
 
         Returns:
-            BatchResult: Batch processing result
+            BatchResult: バッチ処理結果
         """
         # バッチ処理時間計測開始
         start_time = time.time()
@@ -316,17 +316,17 @@ class RAGPipeline:
         ground_truths: List[str]
     ) -> pd.DataFrame:
         """
-        Execute RAGAS evaluation
+        RAGAS評価を実行
 
         Args:
-            results_df: Results DataFrame from process_batch()
-            ground_truths: Ground truth answers list
+            results_df: process_batch()からの結果DataFrame
+            ground_truths: 正解回答のリスト
 
         Returns:
-            pd.DataFrame: Results with evaluation metrics added
+            pd.DataFrame: 評価メトリクスが追加された結果
 
         Raises:
-            EvaluationError: If evaluator is not configured
+            EvaluationError: Evaluatorが設定されていない場合
         """
         # Evaluatorの設定確認
         if self.evaluator is None:
@@ -359,13 +359,13 @@ class RAGPipeline:
 
     def _format_contexts_for_storage(self, chunks: List[RankedChunk]) -> str:
         """
-        Format contexts for DataFrame storage
+        DataFrame保存用にコンテキストをフォーマット
 
         Args:
-            chunks: Ranked chunks list
+            chunks: ランク付けされたチャンクのリスト
 
         Returns:
-            str: Formatted context string
+            str: フォーマットされたコンテキスト文字列
         """
         # コンテキストをDataFrame保存用にフォーマット
         return "\n\n".join([
@@ -375,13 +375,13 @@ class RAGPipeline:
 
     def _parse_contexts_for_evaluation(self, contexts_str: str) -> List[str]:
         """
-        Parse contexts string for RAGAS evaluation
+        RAGAS評価用にコンテキスト文字列をパース
 
         Args:
-            contexts_str: Formatted context string
+            contexts_str: フォーマットされたコンテキスト文字列
 
         Returns:
-            List[str]: Individual context texts
+            List[str]: 個別のコンテキストテキスト
         """
         # 空の場合は空リストを返す
         if not contexts_str or pd.isna(contexts_str):

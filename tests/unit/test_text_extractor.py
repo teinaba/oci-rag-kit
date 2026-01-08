@@ -1,8 +1,8 @@
 """
-Unit tests for TextExtractor class
+TextExtractorクラスのユニットテスト
 
-This module contains comprehensive tests for the TextExtractor class,
-which extracts text from PDF, TXT, and CSV files with encoding detection.
+このモジュールは、エンコーディング検出を備えたPDF、TXT、CSVファイルから
+テキストを抽出するTextExtractorクラスの包括的なテストを含みます。
 """
 import pytest
 from unittest.mock import Mock, patch

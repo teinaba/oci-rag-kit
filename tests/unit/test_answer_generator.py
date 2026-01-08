@@ -1,13 +1,13 @@
 """
-Unit tests for AnswerGenerator class
+AnswerGeneratorクラスのユニットテスト
 
-Tests cover:
-- Constructor validation
-- Cohere model generation (CohereChatRequest)
-- Generic model generation (GenericChatRequest)
-- HTTP 429 retry logic with exponential backoff
-- Prompt construction
-- Invalid model specification
+テストカバレッジ:
+- コンストラクタのバリデーション
+- Cohereモデル生成（CohereChatRequest）
+- Genericモデル生成（GenericChatRequest）
+- HTTP 429リトライロジックと指数バックオフ
+- プロンプト構築
+- 無効なモデル指定
 - Error handling
 """
 
@@ -64,7 +64,7 @@ class TestAnswerGenerator:
         ]
 
     # ========================================
-    # Constructor Tests
+    # コンストラクタのテスト
     # ========================================
 
     def test_constructor_valid_params(self, valid_params):
@@ -113,7 +113,7 @@ class TestAnswerGenerator:
             AnswerGenerator(**valid_params)
 
     # ========================================
-    # Cohere Model Tests (CohereChatRequest)
+    # Cohereモデルのテスト（CohereChatRequest）
     # ========================================
 
     @patch('src.rag.answer_generator.CohereChatRequest')
@@ -130,19 +130,19 @@ class TestAnswerGenerator:
         """Test successful answer generation with Cohere model"""
         generator = AnswerGenerator(**valid_params)
 
-        # Mock response
+        # レスポンスをモック
         mock_response = MagicMock()
         mock_response.data.chat_response.text = "This is the generated answer"
         generator.genai_client.chat.return_value = mock_response
 
-        # Execute
+        # 実行
         result = generator.generate(
             query="What is AI?",
             contexts=sample_contexts,
             model='cohere.command-a-03-2025'
         )
 
-        # Verify
+        # 検証
         assert isinstance(result, GeneratedAnswer)
         assert result.answer == "This is the generated answer"
         assert result.model_used == 'cohere.command-a-03-2025'
@@ -163,22 +163,22 @@ class TestAnswerGenerator:
         """Test answer generation uses default_model when model is None"""
         generator = AnswerGenerator(**valid_params)
 
-        # Mock response
+        # レスポンスをモック
         mock_response = MagicMock()
         mock_response.data.chat_response.text = "Default model answer"
         generator.genai_client.chat.return_value = mock_response
 
-        # Execute (model=None should use default_model)
+        # 実行 (model=None should use default_model)
         result = generator.generate(
             query="What is AI?",
             contexts=sample_contexts
         )
 
-        # Verify default model was used
+        # 検証 default model was used
         assert result.model_used == 'cohere.command-a-03-2025'
 
     # ========================================
-    # Generic Model Tests (GenericChatRequest)
+    # Genericモデルのテスト（GenericChatRequest）
     # ========================================
 
     @patch('src.rag.answer_generator.GenericChatRequest')
@@ -199,7 +199,7 @@ class TestAnswerGenerator:
         """Test successful answer generation with Generic model (Llama, Grok, etc.)"""
         generator = AnswerGenerator(**valid_params)
 
-        # Mock response
+        # レスポンスをモック
         mock_response = MagicMock()
         mock_choice = MagicMock()
         mock_message = MagicMock()
@@ -210,14 +210,14 @@ class TestAnswerGenerator:
         mock_response.data.chat_response.choices = [mock_choice]
         generator.genai_client.chat.return_value = mock_response
 
-        # Execute with Generic model
+        # 実行 with Generic model
         result = generator.generate(
             query="What is AI?",
             contexts=sample_contexts,
             model='meta.llama-3.3-70b-instruct'
         )
 
-        # Verify
+        # 検証
         assert isinstance(result, GeneratedAnswer)
         assert result.answer == "Generic model answer"
         assert result.model_used == 'meta.llama-3.3-70b-instruct'
@@ -241,7 +241,7 @@ class TestAnswerGenerator:
         """Test answer generation with xAI Grok model"""
         generator = AnswerGenerator(**valid_params)
 
-        # Mock response
+        # レスポンスをモック
         mock_response = MagicMock()
         mock_choice = MagicMock()
         mock_message = MagicMock()
@@ -252,25 +252,25 @@ class TestAnswerGenerator:
         mock_response.data.chat_response.choices = [mock_choice]
         generator.genai_client.chat.return_value = mock_response
 
-        # Execute
+        # 実行
         result = generator.generate(
             query="What is AI?",
             contexts=sample_contexts,
             model='xai.grok-4-fast-non-reasoning'
         )
 
-        # Verify
+        # 検証
         assert result.answer == "Grok model answer"
         assert result.model_used == 'xai.grok-4-fast-non-reasoning'
 
     # ========================================
-    # HTTP 429 Retry Logic Tests
+    # HTTP 429リトライロジックのテスト
     # ========================================
 
     @patch('src.rag.answer_generator.CohereChatRequest')
     @patch('src.rag.answer_generator.ChatDetails')
     @patch('src.rag.answer_generator.OnDemandServingMode')
-    @patch('time.sleep', return_value=None)  # Mock sleep to speed up tests
+    @patch('time.sleep', return_value=None)  # テストを高速化するためにsleepをモック
     def test_retry_on_http_429_success(
         self,
         mock_sleep,
@@ -283,7 +283,7 @@ class TestAnswerGenerator:
         """Test retry logic succeeds after HTTP 429 error"""
         generator = AnswerGenerator(**valid_params)
 
-        # Mock: First call raises 429, second succeeds
+        # モック: 最初の呼び出しは429を返し、2回目は成功
         http_429_error = Exception("HTTP 429 Rate Limit")
         http_429_error.status = 429
 
@@ -295,13 +295,13 @@ class TestAnswerGenerator:
             mock_success_response
         ]
 
-        # Execute
+        # 実行
         result = generator.generate(
             query="What is AI?",
             contexts=sample_contexts
         )
 
-        # Verify retry occurred and succeeded
+        # 検証 retry occurred and succeeded
         assert result.answer == "Success after retry"
         assert generator.genai_client.chat.call_count == 2
         assert mock_sleep.called
@@ -327,14 +327,14 @@ class TestAnswerGenerator:
         http_429_error.status = 429
         generator.genai_client.chat.side_effect = http_429_error
 
-        # Execute and verify exception
+        # 実行 and verify exception
         with pytest.raises(RateLimitError, match="Rate limit exceeded after 3 retries"):
             generator.generate(
                 query="What is AI?",
                 contexts=sample_contexts
             )
 
-        # Verify retry attempts (1 initial + 3 retries = 4 total)
+        # 検証 retry attempts (1 initial + 3 retries = 4 total)
         assert generator.genai_client.chat.call_count == 4
 
     @patch('src.rag.answer_generator.CohereChatRequest')
@@ -366,19 +366,19 @@ class TestAnswerGenerator:
             mock_success
         ]
 
-        # Execute
+        # 実行
         result = generator.generate(
             query="What is AI?",
             contexts=sample_contexts
         )
 
-        # Verify exponential backoff: 60, 120 seconds
+        # 検証 exponential backoff: 60, 120 seconds
         assert mock_sleep.call_count == 2
         assert mock_sleep.call_args_list[0][0][0] == 60  # First retry: 60s
         assert mock_sleep.call_args_list[1][0][0] == 120  # Second retry: 120s
 
     # ========================================
-    # Error Handling Tests
+    # エラーハンドリングのテスト
     # ========================================
 
     @patch('src.rag.answer_generator.CohereChatRequest')
@@ -400,18 +400,18 @@ class TestAnswerGenerator:
         other_error.status = 500
         generator.genai_client.chat.side_effect = other_error
 
-        # Execute and verify immediate failure
+        # 実行 and verify immediate failure
         with pytest.raises(AnswerGenerationError):
             generator.generate(
                 query="What is AI?",
                 contexts=sample_contexts
             )
 
-        # Verify only 1 attempt (no retries)
+        # 検証 only 1 attempt (no retries)
         assert generator.genai_client.chat.call_count == 1
 
     # ========================================
-    # Prompt Construction Tests
+    # プロンプト構築のテスト
     # ========================================
 
     @patch('src.rag.answer_generator.CohereChatRequest')
@@ -428,30 +428,30 @@ class TestAnswerGenerator:
         """Test prompt is correctly constructed from query and contexts"""
         generator = AnswerGenerator(**valid_params)
 
-        # Mock response
+        # レスポンスをモック
         mock_response = MagicMock()
         mock_response.data.chat_response.text = "Answer"
         generator.genai_client.chat.return_value = mock_response
 
-        # Execute
+        # 実行
         generator.generate(
             query="What is AI?",
             contexts=sample_contexts
         )
 
-        # Verify CohereChatRequest was called with a message containing query and contexts
+        # 検証 CohereChatRequest was called with a message containing query and contexts
         assert mock_cohere_request.called
         call_kwargs = mock_cohere_request.call_args[1]
         message = call_kwargs['message']
 
-        # Check prompt contains query
+        # プロンプトにクエリが含まれていることを確認
         assert "What is AI?" in message
-        # Check prompt contains context filenames
+        # プロンプトにコンテキストのファイル名が含まれていることを確認
         assert "doc1.pdf" in message
         assert "doc2.pdf" in message
 
     # ========================================
-    # Parameter Tests
+    # パラメータのテスト
     # ========================================
 
     @patch('src.rag.answer_generator.CohereChatRequest')
@@ -468,12 +468,12 @@ class TestAnswerGenerator:
         """Test custom generation parameters are passed correctly"""
         generator = AnswerGenerator(**valid_params)
 
-        # Mock response
+        # レスポンスをモック
         mock_response = MagicMock()
         mock_response.data.chat_response.text = "Answer"
         generator.genai_client.chat.return_value = mock_response
 
-        # Execute with custom parameters
+        # 実行 with custom parameters
         generator.generate(
             query="What is AI?",
             contexts=sample_contexts,
@@ -484,7 +484,7 @@ class TestAnswerGenerator:
             top_k=10
         )
 
-        # Verify parameters were passed to CohereChatRequest
+        # 検証 parameters were passed to CohereChatRequest
         assert mock_cohere_request.called
         call_kwargs = mock_cohere_request.call_args[1]
         assert call_kwargs['max_tokens'] == 500

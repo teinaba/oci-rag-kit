@@ -80,7 +80,7 @@ class JapaneseReranker:
         self.device = device if device else self._detect_device()
         self.max_length = max_length
         self.batch_size = batch_size
-        self._model = None  # Lazy initialization
+        self._model = None  # 遅延初期化
 
     @staticmethod
     def _detect_device() -> str:
