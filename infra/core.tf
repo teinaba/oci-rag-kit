@@ -60,7 +60,6 @@ resource "oci_core_internet_gateway" "export_--vcn01" {
 }
 
 resource "oci_core_subnet" "export_--vcn01_1" {
-  #availability_domain = <<Optional value not found in discovery>>
   cidr_block     = "10.0.1.0/24"
   compartment_id = var.compartment_ocid
   defined_tags = {
@@ -69,12 +68,6 @@ resource "oci_core_subnet" "export_--vcn01_1" {
   display_name    = "プライベート・サブネット-vcn01"
   freeform_tags = {
   }
-  ipv4cidr_blocks = [
-    "10.0.1.0/24",
-  ]
-  #ipv6cidr_block = <<Optional value not found in discovery>>
-  ipv6cidr_blocks = [
-  ]
   prohibit_internet_ingress  = "true"
   prohibit_public_ip_on_vnic = "true"
   route_table_id             = oci_core_route_table.export_route-table-for-private--vcn01.id
@@ -85,7 +78,6 @@ resource "oci_core_subnet" "export_--vcn01_1" {
 }
 
 resource "oci_core_subnet" "export_--vcn01_2" {
-  #availability_domain = <<Optional value not found in discovery>>
   cidr_block     = "10.0.0.0/24"
   compartment_id = var.compartment_ocid
   defined_tags = {
@@ -94,12 +86,6 @@ resource "oci_core_subnet" "export_--vcn01_2" {
   display_name    = "パブリック・サブネット-vcn01"
   freeform_tags = {
   }
-  ipv4cidr_blocks = [
-    "10.0.0.0/24",
-  ]
-  #ipv6cidr_block = <<Optional value not found in discovery>>
-  ipv6cidr_blocks = [
-  ]
   prohibit_internet_ingress  = "false"
   prohibit_public_ip_on_vnic = "false"
   route_table_id             = oci_core_vcn.export_vcn01.default_route_table_id

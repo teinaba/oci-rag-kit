@@ -12,42 +12,19 @@ resource "oci_database_autonomous_database" "export_ragdb" {
   backup_retention_period_in_days      = "7"
   #byol_compute_count_limit = <<Optional value not found in discovery>>
   character_set = "AL32UTF8"
-  clone_table_space_list = [
-  ]
-  clone_type              = ""
-  compartment_id          = var.compartment_ocid
+  compartment_id = var.compartment_ocid
   compute_count           = "2"
   compute_model           = "ECPU"
   cpu_core_count          = "0"
   data_safe_status        = "NOT_REGISTERED"
   data_storage_size_in_gb = "50"
   #data_storage_size_in_tbs = <<Optional value not found in discovery>>
-  database_edition           = ""
-  database_management_status = ""
-  db_name                    = "ragdb"
-  db_tools_details {
-    #compute_count = <<Optional value not found in discovery>>
-    #is_enabled = <<Optional value not found in discovery>>
-    #max_idle_time_in_minutes = <<Optional value not found in discovery>>
-    name = "<placeholder for missing required attribute>" #Required attribute not found in discovery, placeholder value set to avoid plan failure
-  }
-  db_tools_details {
-    #compute_count = <<Optional value not found in discovery>>
-    #is_enabled = <<Optional value not found in discovery>>
-    #max_idle_time_in_minutes = <<Optional value not found in discovery>>
-    name = "<placeholder for missing required attribute>" #Required attribute not found in discovery, placeholder value set to avoid plan failure
-  }
+  db_name = "ragdb"
   db_tools_details {
     compute_count            = "32"
     is_enabled               = "true"
     max_idle_time_in_minutes = "10"
     name                     = "DLA"
-  }
-  db_tools_details {
-    #compute_count = <<Optional value not found in discovery>>
-    #is_enabled = <<Optional value not found in discovery>>
-    #max_idle_time_in_minutes = <<Optional value not found in discovery>>
-    name = "<placeholder for missing required attribute>" #Required attribute not found in discovery, placeholder value set to avoid plan failure
   }
   db_tools_details {
     compute_count            = "8"
@@ -60,12 +37,6 @@ resource "oci_database_autonomous_database" "export_ragdb" {
     is_enabled               = "true"
     max_idle_time_in_minutes = "30"
     name                     = "DATA_TRANSFORMS"
-  }
-  db_tools_details {
-    #compute_count = <<Optional value not found in discovery>>
-    #is_enabled = <<Optional value not found in discovery>>
-    #max_idle_time_in_minutes = <<Optional value not found in discovery>>
-    name = "<placeholder for missing required attribute>" #Required attribute not found in discovery, placeholder value set to avoid plan failure
   }
   db_tools_details {
     compute_count            = "8"
