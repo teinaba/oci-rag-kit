@@ -1,0 +1,6 @@
+# Copy this file to terraform.tfvars and fill in your actual values
+# cp terraform.tfvars.example terraform.tfvars
+
+region            = "ap-osaka-1"  # or "us-chicago-1"
+compartment_ocid  = "ocid1.compartment.oc1..your-compartment-ocid-here"
+db_admin_password = "YourSecurePassword123!"  # 12-30 chars, must include upper, lower, number
