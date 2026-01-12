@@ -1,144 +1,159 @@
-# OCI Terraform Infrastructure
+# OCI RAG Kit - 自動構築手順
 
-Deploy OCI infrastructure for RAG application with Terraform.
+## 概要
 
-## Prerequisites
+- OCI RAG Kit に必要な基盤を Terraform で一括構築する手順
+- 実行環境は OCI Cloud Shell 前提
 
-- [Terraform](https://www.terraform.io/downloads) installed
-- [OCI CLI](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm) configured
-- Access to OCI compartment
+### 構築されるリソース
 
-## Quick Start
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        OCI Compartment                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                    VCN (10.0.0.0/16)                    │    │
+│  │  ┌─────────────────────┐  ┌─────────────────────────┐   │    │
+│  │  │  Public Subnet      │  │  Private Subnet         │   │    │
+│  │  │  10.0.0.0/24        │  │  10.0.1.0/24            │   │    │
+│  │  │                     │  │                         │   │    │
+│  │  │  ・Internet GW      │  │  ・NAT Gateway           │   │    │
+│  │  │                     │  │  ・Service Gateway       │   │   │
+│  │  └─────────────────────┘  └─────────────────────────┘   │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌───────────────┐    │
+│  │ Autonomous AI   │  │ Data Science    │  │ Object        │    │
+│  │ Database 26ai   │  │ Notebook        │  │ Storage       │    │
+│  │                 │  │                 │  │               │    │
+│  │ ・2 ECPU        │  │ ・VM.E5.Flex     │  │ ・rag-source  │    │
+│  │ ・50GB Storage  │  │ ・4oCPU/64GB MEM │  │ ・faq         │    │
+│  │ ・OLTP          │  │ ・50GB Block     │  │               │    │
+│  └─────────────────┘  └─────────────────┘  └───────────────┘    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-### 1. Setup Variables
+## 前提条件
+
+- **対応リージョン**: `ap-osaka-1`（大阪）または `us-chicago-1`（シカゴ）
+- **コンパートメントOCID**: 当該コンパートメントの管理者権限を持つユーザで Cloud Shell を起動
+
+## クイックスタート
+
+### 1. Cloud Shell を起動
+
+- OCI コンソール右上の **Cloud Shell アイコン**（ターミナルマーク）をクリックして起動
+
+### 2. リポジトリをクローン
 
 ```bash
-cp terraform.tfvars.example terraform.tfvars
+git clone https://github.com/teinaba/oci-rag-kit.git
+cd oci-rag-kit/infra
 ```
 
-Edit `terraform.tfvars` with your values:
+### 3. 変数ファイルを作成
 
-```hcl
-region            = "ap-osaka-1"  # or "us-chicago-1"
-compartment_ocid  = "ocid1.compartment.oc1..your-actual-ocid"
-db_admin_password = "YourSecurePassword123!"
-```
-
-### 2. Deploy
+以下をコピーし、3つの値を自分の環境に合わせて書き換えてから実行:
 
 ```bash
-make apply
+cat << 'EOF' > terraform.tfvars
+region            = "us-chicago-1"  #または"ap-osaka-1"
+compartment_ocid  = "ocid1.compartment.oc1..xxxxx"
+db_admin_password = "YourPassword123!"  #12〜30文字、大文字・小文字・数字を各1文字以上含む
+EOF
 ```
 
-### 3. Destroy (when done)
+### 4. デプロイ
 
 ```bash
-make destroy
+terraform init
+terraform apply
 ```
 
-## Available Commands
+`Enter a value:`と表示されたら `yes` を入力。初回実行時はプロバイダーのダウンロードに数分かかります。
+デプロイに失敗した場合は `terraform destroy` でリソースを削除してから再実行してください。
 
 ```bash
-make help      # Show all available commands
-make test      # Run validation tests (no deployment)
-make init      # Initialize Terraform
-make plan      # Show execution plan (dry run)
-make apply     # Deploy infrastructure
-make destroy   # Destroy infrastructure
-make clean     # Clean up Terraform files
+terraform destroy
 ```
 
-## What Gets Deployed
 
-- **VCN**: Virtual Cloud Network with public and private subnets
-- **Autonomous Database**: Oracle Autonomous Database 26ai (OLTP)
-- **Data Science**: Project and Notebook Session (ARM-based)
-- **Object Storage**: Buckets for FAQ and RAG source data
+### 5. デプロイ結果を確認
 
-### Resources Details
+デプロイ完了後、OCI コンソールで以下を確認:
 
-| Resource | Type | Description |
-|----------|------|-------------|
-| VCN | oci_core_vcn | 10.0.0.0/16 CIDR |
-| Public Subnet | oci_core_subnet | 10.0.0.0/24 |
-| Private Subnet | oci_core_subnet | 10.0.1.0/24 |
-| Autonomous DB | oci_database_autonomous_database | 2 ECPUs, 50GB storage |
-| Notebook Session | oci_datascience_notebook_session | VM.Standard.A1.Flex (ARM) |
-| Object Storage | oci_objectstorage_bucket | 2 buckets (faq, rag-source) |
+- **ネットワーキング > VCN** - `vcn01` が作成されていること
+- **Oracle AI Database > Autonomous Database** - `ragdb` が「使用可能」状態であること
+- **ストレージ > バケット** - `rag-source`、`faq` が作成されていること
 
-## Supported Regions
-
-- `us-chicago-1` (Chicago)
-- `ap-osaka-1` (Osaka)
-
-## Testing
-
-Run validation without deploying resources:
+### 6. リソースを削除（検証終了時）
 
 ```bash
-make test
+terraform destroy
 ```
 
-This will:
-1. Initialize Terraform (without backend)
-2. Check code formatting
-3. Validate configuration
-4. Show execution plan
+`Enter a value:` と表示されたら `yes` を入力して Enter を押します。
 
-## Security Notes
+## リソース詳細
 
-⚠️ **Important**:
-- Never commit `terraform.tfvars` to Git (it contains secrets)
-- The `.gitignore` file protects sensitive files automatically
-- Use strong passwords (12-30 chars, upper/lower/number required)
+### ネットワーク (core.tf)
 
-## Troubleshooting
+- **VCN** (vcn01): 10.0.0.0/16
+  - パブリックサブネット: 10.0.0.0/24
+  - プライベートサブネット: 10.0.1.0/24（Notebook デプロイ先）
+- **ゲートウェイ**: Internet GW / NAT GW / Service GW
 
-### terraform.tfvars not found
+### データベース (database.tf)
+
+- **ragdb** (Autonomous AI Database 26ai)
+  - ワークロード: OLTP
+  - ECPU: 2（自動スケーリング有効）
+  - ストレージ: 50GB
+  - ネットワーク: プライベートサブネットのみ
+
+### Data Science (datascience.tf)
+
+- **Notebook Session**
+  - シェイプ: VM.Standard.E5.Flex (AMD)
+  - OCPU: 4 / メモリ: 64GB
+  - ブロックストレージ: 50GB
+
+### Object Storage (object_storage.tf)
+
+- **rag-source**: RAG ソースドキュメント格納
+- **faq**: FAQ ファイル格納
+
+## トラブルシューティング
+
+### リソース作成エラー
+
+#### 権限エラー
+
+```
+Error: 404-NotAuthorizedOrNotFound
+```
+
+コンパートメントへの適切な権限があるか確認してください。テナンシー管理者に IAM ポリシーの確認を依頼してください。
+
+### 状態ファイルの破損
 
 ```bash
-cp terraform.tfvars.example terraform.tfvars
-# Edit the file with your values
+# 状態ファイルを削除して再初期化
+rm -rf .terraform terraform.tfstate*
+terraform init
 ```
 
-### Authentication errors
-
-Make sure OCI CLI is configured:
-
-```bash
-oci setup config
-```
-
-### Region not supported
-
-Only `us-chicago-1` and `ap-osaka-1` are tested. Other regions may work but are not guaranteed.
-
-## Resource Costs
-
-Estimated monthly costs (as of 2024):
-- Autonomous Database: ~$200-300/month (2 ECPUs, always-on)
-- Data Science Notebook: ~$50-100/month (ARM instance)
-- VCN & Networking: Free tier eligible
-- Object Storage: Pay per usage (~$0.0255/GB/month)
-
-💡 Tip: Stop the notebook session when not in use to reduce costs.
-
-## File Structure
+## ファイル構成
 
 ```
-.
-├── .gitignore                  # Git exclusions
-├── Makefile                    # Deployment commands
-├── README.md                   # This file
-├── terraform.tfvars.example    # Variables template
-├── provider.tf                 # OCI provider configuration
-├── vars.tf                     # Variable definitions
-├── core.tf                     # VCN, subnets, gateways
-├── database.tf                 # Autonomous Database
-├── datascience.tf              # Data Science resources
-└── object_storage.tf           # Object Storage buckets
+infra/
+├── README.md          # このファイル
+├── provider.tf        # OCI プロバイダー設定
+├── vars.tf            # 変数定義
+├── core.tf            # VCN、サブネット、ゲートウェイ
+├── database.tf        # Autonomous Database
+├── datascience.tf     # Data Science リソース
+└── object_storage.tf  # Object Storage バケット
 ```
-
-## License
-
-MIT
