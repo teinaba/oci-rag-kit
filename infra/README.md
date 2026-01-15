@@ -71,7 +71,7 @@ db_admin_password = "YourPassword123!"  #12〜30文字、大文字・小文字�
 EOF
 ```
 
-> **Note**: 
+> **Note**:
 > `home_region` はテナンシーのホームリージョンを指定します(例: "ap-tokyo-1", "us-ashburn-1")。
 
 ### 4. デプロイ
