@@ -32,6 +32,11 @@
 │  │ ・OLTP          │  │ ・50GB Block     │  │               │    │
 │  └─────────────────┘  └─────────────────┘  └───────────────┘    │
 │                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                         IAM                             │    │
+│  │  ・Policy: data-science-policy                          │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -59,11 +64,15 @@ cd oci-rag-kit/infra
 
 ```bash
 cat << 'EOF' > terraform.tfvars
-region            = "us-chicago-1"  #または"ap-osaka-1"
+region            = "us-chicago-1"  #or "ap-osaka-1"
+home_region       = "ap-osaka-1"  #e.g. "ap-tokyo-1", "us-ashburn-1"
 compartment_ocid  = "ocid1.compartment.oc1..xxxxx"
 db_admin_password = "YourPassword123!"  #12〜30文字、大文字・小文字・数字を各1文字以上含む
 EOF
 ```
+
+> **Note**:
+> `home_region` はテナンシーのホームリージョンを指定します(例: "ap-tokyo-1", "us-ashburn-1")。
 
 ### 4. デプロイ
 
@@ -74,11 +83,6 @@ terraform apply
 
 `Enter a value:`と表示されたら `yes` を入力。初回実行時はプロバイダーのダウンロードに数分かかります。
 デプロイに失敗した場合は `terraform destroy` でリソースを削除してから再実行してください。
-
-```bash
-terraform destroy
-```
-
 
 ### 5. デプロイ結果を確認
 
@@ -94,7 +98,7 @@ terraform destroy
 terraform destroy
 ```
 
-`Enter a value:` と表示されたら `yes` を入力して Enter を押します。
+`Enter a value:` と表示されたら `yes` を入力して Enter を入力。
 
 ## リソース詳細
 
@@ -125,6 +129,11 @@ terraform destroy
 - **rag-source**: RAG ソースドキュメント格納
 - **faq**: FAQ ファイル格納
 
+### IAM (iam.tf)
+
+- **Policy**: data-science-policy
+  - `allow service datascience to use virtual-network-family in compartment id <compartment_ocid>`
+
 ## トラブルシューティング
 
 ### リソース作成エラー
@@ -136,6 +145,14 @@ Error: 404-NotAuthorizedOrNotFound
 ```
 
 コンパートメントへの適切な権限があるか確認してください。テナンシー管理者に IAM ポリシーの確認を依頼してください。
+
+#### IAMポリシーのホームリージョンエラー
+
+```
+Error: 403-NotAllowed, Policy can only be created in the home tenancy region
+```
+
+OCIではIAMポリシーの作成・更新・削除はホームリージョンで実行する必要があります。`terraform.tfvars` の `home_region` が正しく設定されているか確認してください。
 
 ### 状態ファイルの破損
 
@@ -155,5 +172,6 @@ infra/
 ├── core.tf            # VCN、サブネット、ゲートウェイ
 ├── database.tf        # Autonomous Database
 ├── datascience.tf     # Data Science リソース
-└── object_storage.tf  # Object Storage バケット
+├── object_storage.tf  # Object Storage バケット
+└── iam.tf             # IAM Policy
 ```
