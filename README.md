@@ -28,13 +28,18 @@
 
 ## Setup
 
-### 手動セットアップ
+### インフラ構築
 
-OCI上に一からRAG環境を構築する場合は、以下の手順書を参照してください:
+OCI上にRAG環境を構築する方法は2つあります:
 
-📖 **[OCI手動構築ガイド](infra/oci-manual-setup-guide.md)**
+| 方法 | 説明 |
+|------|------|
+| **[Terraform 自動構築](infra/terraform/README.md)** | Cloud Shell から一括構築（推奨） |
+| **[手動構築](infra/manual-setup.md)** | OCI コンソールで各リソースを個別作成 |
 
-手順書に従って以下を構築します:
+詳細は **[infra/README.md](infra/README.md)** を参照してください。
+
+構築されるリソース:
 - Virtual Cloud Network (VCN)
 - Autonomous AI Database 26ai
 - Object Storage
@@ -44,7 +49,7 @@ OCI上に一からRAG環境を構築する場合は、以下の手順書を参�
 ### Quick Start（環境構築済みの場合）
 
 ```bash
-# 1. 環境変数設定（詳細は infra/oci-manual-setup-guide.md 参照）
+# 1. 環境変数設定（詳細は infra/manual-setup.md 参照）
 # .env ファイルを作成してOCI/DB接続情報を入力
 
 # 2. 環境構築（conda）
@@ -61,21 +66,25 @@ cd setup && bash setup.sh
 - OCIコンパートメント
   - コンパートメントの管理権限が必要
 
-詳細は [infra/oci-manual-setup-guide.md](infra/oci-manual-setup-guide.md) を参照してください。
+詳細は [infra/README.md](infra/README.md) を参照してください。
 
 ## Repository Structure
 
 ```bash
-infra/              # インフラ構築手順
-└── oci-manual-setup-guide.md
+infra/                   # インフラ構築
+├── README.md            # 構築方法の選択ガイド
+├── manual-setup.md      # 手動構築ガイド
+└── terraform/           # Terraform 自動構築
+    ├── README.md        # Terraform 構築ガイド
+    └── *.tf
 
-notebooks/          # Jupyter Notebooks
+notebooks/               # Jupyter Notebooks
 ├── 11_create_table.ipynb
 ├── 12_data_pipeline.ipynb
 ├── 13_rag.ipynb
 └── config_loader.py
 
-setup/              # 環境構築
+setup/                   # 環境構築
 ├── environment.yaml
 └── setup.sh
 ```
@@ -100,7 +109,7 @@ key_file=~/.oci/oci_api_key.pem
 
 ### 2. 環境変数（.env）
 
-プロジェクトルートに `.env` を作成し、以下を設定（詳細は `infra/oci-manual-setup-guide.md` の手順6.5を参照）：
+プロジェクトルートに `.env` を作成し、以下を設定（詳細は `infra/manual-setup.md` の手順6.5を参照）：
 
 | 変数名 | 説明 | 例 |
 |--------|------|-----|
