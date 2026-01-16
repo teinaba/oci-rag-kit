@@ -96,24 +96,6 @@ RAG検索におけるフィルタリングを行う際は、フォルダごと�
   - 運用上の通知およびお知らせ用の連絡先: 変更なし
   - 拡張オプション: 変更なし
 
-### 4.2. データベース・ユーザ(スキーマ)の作成
-- [Oracle AI Database] > [Autonomous AI Database] > [ragdb]
-- [ツール構成] > [データベース・アクション]から[パブリック・アクセスURL]の値をコピーして、ブラウザで開く
-  - ユーザ: ADMIN
-  - パスワード: <インスタンス作成時に指定したPW>
-- [管理] > [データベース・ユーザ] > [ユーザの作成]
-- 以下の情報を入力し、ユーザを作成
-  - ユーザ名: RAG
-  - パスワード: <任意のパスワード>
-  - 表領域の割当制限DATA: UNLIMITED
-  - パスワードの有効期限切れ: チェックなし (Default)
-  - アカウントがロックされています: チェックなし (Default)
-  - グラフ: チェックなし (Default)
-  - OML: チェックあり
-  - REST、GraphQL、MongoDB APIおよびWebアクセス: チェックあり
-  - 残りはデフォルト
-
-
 ## 5. OCI Data Science環境の構築
 手順の流れ
 1. ポリシーの作成
@@ -232,19 +214,25 @@ chmod 600 ~/.oci/config
 - Terminalで以下のコマンドを実行し、.envファイルを作成
   - 手順6.1～6.4で取得した情報を使用
   - メモ帳などで編集してからペーストすると効率的
+  - 値を " " で囲む必要はない (例: OCI_REGION=ap-osaka-1)
 ```bash
 cd ~/oci-rag-kit
 
 cat > .env << 'EOF'
 # ========================================
-# Oracle Database Connection
+# Oracle AI Database ADMIN 接続情報
+# ========================================
+DB_ADMIN_PASSWORD=<4.1で設定したADMINパスワード>
+
+# ========================================
+# Oracle AI Database User 接続情報
 # ========================================
 DB_USERNAME=rag
-DB_PASSWORD=<4.2で設定したRAGユーザのパスワード>
+DB_PASSWORD=<RAGユーザのパスワード>
 DB_DSN=<6.4で取得したデータベース接続文字列>
 
 # ========================================
-# OCI Authentication (Do not edit)
+# OCI 認証情報 (Do not edit)
 # ========================================
 # Path to ~/.oci/config file (default: ~/.oci/config)
 OCI_CONFIG_FILE=~/.oci/config
@@ -266,7 +254,8 @@ EOF
 chmod 600 .env
 ```
 - 編集が必要な項目（`< >`で囲まれた部分を置き換える）:
-  - `DB_PASSWORD`: 4.2で設定したRAGユーザのパスワード
+  - `DB_ADMIN_PASSWORD`: 4.1で設定したADMINパスワード（RAGユーザー自動作成に必要）
+  - `DB_PASSWORD`: RAGユーザのパスワード（任意のパスワードを設定）
   - `DB_DSN`: 6.4で取得したデータベース接続文字列
   - `OCI_COMPARTMENT_ID`: 6.3で取得したragコンパートメントのOCID
   - `OCI_REGION`: 使用するリージョン名（例: `us-chicago-1`, `ap-osaka-1`）

@@ -129,6 +129,36 @@ class ConfigLoader:
             'dsn': dsn
         }
 
+    def get_admin_db_params(self) -> Dict[str, str]:
+        """
+        Oracle Database ADMIN接続パラメータを取得（ユーザー作成用）
+
+        DB_ADMIN_PASSWORDが設定されている場合にADMIN接続情報を返します。
+        設定されていない場合はNoneを返します。
+
+        Returns:
+            dict: user, password, dsnを含む辞書。未設定の場合はNone
+
+        Note:
+            この接続情報はRAGユーザーの作成などの管理作業に使用します。
+            通常のアプリケーション接続にはget_db_params()を使用してください。
+        """
+        admin_password = os.getenv('DB_ADMIN_PASSWORD')
+        dsn = os.getenv('DB_DSN')
+
+        # ADMIN PWが設定されていない場合はNoneを返す
+        if not admin_password:
+            return None
+
+        if not dsn:
+            raise ValueError("DB_DSNが設定されていません")
+
+        return {
+            'user': os.getenv('DB_ADMIN_USERNAME', 'ADMIN'),
+            'password': admin_password,
+            'dsn': dsn
+        }
+
     def get_oci_config(self) -> Dict[str, Any]:
         """
         OCI認証設定を取得
@@ -310,6 +340,20 @@ def get_db_connection_params() -> Dict[str, str]:
         新しいコードでは ConfigLoader クラスを直接使用することを推奨します。
     """
     return _default_config_loader.get_db_params()
+
+
+def get_admin_db_connection_params() -> Dict[str, str]:
+    """
+    Oracle Database ADMIN接続パラメータを取得（後方互換性用）
+
+    DB_ADMIN_PASSWORDが設定されている場合にADMIN接続情報を返します。
+    設定されていない場合はNoneを返します。
+
+    Note:
+        この関数は後方互換性のために提供されています。
+        新しいコードでは ConfigLoader クラスを直接使用することを推奨します。
+    """
+    return _default_config_loader.get_admin_db_params()
 
 
 def get_oci_config() -> Dict[str, Any]:
