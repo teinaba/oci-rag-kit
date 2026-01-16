@@ -7,8 +7,10 @@ RAG処理結果をExcel形式で保存する機能を提供します。
 
 from typing import Dict, Any, Optional
 from io import BytesIO
+import re
 import pandas as pd
 import oci
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from src.rag.exceptions import ExcelHandlerError
 
 
@@ -62,6 +64,34 @@ class ExcelHandler:
         if self._client is None:
             self._client = oci.object_storage.ObjectStorageClient(self.oci_config)
         return self._client
+
+    def _clean_text_for_excel(self, text: Any) -> Any:
+        """Excelで使用できない不正文字を除去
+
+        LLM生成テキストには制御文字（\\x00-\\x1fなど）が含まれることがあり、
+        openpyxlでExcelファイル保存時にエラーを引き起こす。
+        この関数でそれらの文字を除去する。
+
+        Args:
+            text: クリーニング対象のテキスト（文字列以外はそのまま返す）
+
+        Returns:
+            クリーニング済みのテキスト、または元の値（文字列以外の場合）
+        """
+        if isinstance(text, str):
+            return re.sub(ILLEGAL_CHARACTERS_RE, '', text)
+        return text
+
+    def _clean_dataframe_for_excel(self, df: pd.DataFrame) -> pd.DataFrame:
+        """DataFrame全体に対してExcel不正文字のクリーニングを適用
+
+        Args:
+            df: クリーニング対象のDataFrame
+
+        Returns:
+            pd.DataFrame: クリーニング済みのDataFrame（元のDataFrameは変更しない）
+        """
+        return df.map(self._clean_text_for_excel)
 
     def load_faq(
         self,
@@ -132,16 +162,22 @@ class ExcelHandler:
             ExcelHandlerError: 保存に失敗した場合
         """
         try:
+            # Excel不正文字をクリーニング（LLM生成テキストの制御文字対策）
+            cleaned_results_df = self._clean_dataframe_for_excel(results_df)
+            cleaned_metadata_df = None
+            if metadata_df is not None:
+                cleaned_metadata_df = self._clean_dataframe_for_excel(metadata_df)
+
             # ExcelファイルをBytesIOバッファに書き込み
             excel_buffer = BytesIO()
 
             with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                 # 結果シート
-                results_df.to_excel(writer, sheet_name='Results', index=False)
+                cleaned_results_df.to_excel(writer, sheet_name='Results', index=False)
 
                 # メタデータシート（オプション）
-                if metadata_df is not None:
-                    metadata_df.to_excel(writer, sheet_name='Settings', index=False)
+                if cleaned_metadata_df is not None:
+                    cleaned_metadata_df.to_excel(writer, sheet_name='Settings', index=False)
 
             excel_buffer.seek(0)
 
