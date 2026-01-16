@@ -63,8 +63,14 @@ cd setup && bash setup.sh
 
 ## Prerequisites
 
-- OCIコンパートメント
-  - コンパートメントの管理権限が必要
+- **OCIテナンシー**
+  - 有効なOCIアカウント
+
+- **必要な権限**
+  - 対象コンパートメントの管理者権限、または
+  - 以下の個別権限:
+    - VCN / Autonomous Database / Object Storage / Data Science の作成権限
+    - IAMポリシーの作成権限（Data Scienceサービス用）
 
 詳細は [infra/README.md](infra/README.md) を参照してください。
 

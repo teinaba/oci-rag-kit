@@ -249,6 +249,8 @@ OCI_REGION=<使用するリージョン名（例: us-chicago-1, ap-osaka-1）>
 # OCI Object Storage
 # ========================================
 OCI_BUCKET_NAME=rag-source
+OCI_FAQ_BUCKET_NAME=faq
+OCI_FAQ_OBJECT_NAME=faq.xlsx
 EOF
 
 chmod 600 .env
