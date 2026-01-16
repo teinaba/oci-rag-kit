@@ -2,6 +2,17 @@
 
 OCI RAG Kit に必要なインフラを構築するための2つの方法を提供しています。
 
+## 前提条件
+
+- **OCIテナンシー**
+  - 有効なOCIアカウント
+
+- **必要な権限**
+  - 対象コンパートメントの管理者権限、または
+  - 以下の個別権限:
+    - VCN / Autonomous Database / Object Storage / Data Science の作成権限
+    - IAMポリシーの作成権限（Data Scienceサービス用）
+
 ## 構築方法の選択
 
 | 方法 | 所要時間 | 推奨ユーザー |

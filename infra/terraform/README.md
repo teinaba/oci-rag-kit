@@ -43,7 +43,11 @@
 ## 前提条件
 
 - **対応リージョン**: `ap-osaka-1`（大阪）または `us-chicago-1`（シカゴ）
-- **コンパートメントOCID**: 当該コンパートメントの管理者権限を持つユーザで Cloud Shell を起動
+- **必要な権限**
+  - 対象コンパートメントの管理者権限、または
+  - 以下の個別権限:
+    - VCN / Autonomous Database / Object Storage / Data Science の作成権限
+    - IAMポリシーの作成権限（Data Scienceサービス用）
 
 ## クイックスタート
 
@@ -92,7 +96,15 @@ terraform apply
 - **Oracle AI Database > Autonomous Database** - `ragdb` が「使用可能」状態であること
 - **ストレージ > バケット** - `rag-source`、`faq` が作成されていること
 
-### 6. リソースを削除（検証終了時）
+### 6. 次のステップ
+
+インフラ構築完了後、**[手動構築ガイド](../manual-setup.md)** の以下の手順に進んでください:
+
+1. **[5.4. Notebook の環境整備](../manual-setup.md#54-notebook-の環境整備)** - git clone、Python環境構築
+2. **[6. クレデンシャルの作成](../manual-setup.md#6-クレデンシャルの作成とコード実行に必要な情報の採取)** - APIキー、.env設定
+3. **[7. Pythonコードの実行](../manual-setup.md#7-pythonコードの実行)** - Notebook実行
+
+### 7. リソースを削除（検証終了時）
 
 ```bash
 terraform destroy
