@@ -1,6 +1,6 @@
 [project]
 name = "oci-rag-kit"
-version = "0.1.0"
+version = "1.0.0"
 description = "Japanese RAG starter kit on Oracle Cloud Infrastructure"
 readme = "README.md"
 requires-python = ">=3.13"
