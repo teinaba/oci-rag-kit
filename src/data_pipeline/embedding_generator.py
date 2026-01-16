@@ -7,15 +7,8 @@
 from dataclasses import dataclass
 from typing import Optional
 import logging
-import sys
-from pathlib import Path
 
-# config_loaderインポートのためにnotebooksディレクトリをパスに追加
-notebooks_path = Path(__file__).parent.parent.parent / 'notebooks'
-if str(notebooks_path) not in sys.path:
-    sys.path.insert(0, str(notebooks_path))
-
-from config_loader import ConfigLoader
+from src.config import ConfigLoader
 from langchain_community.embeddings import OCIGenAIEmbeddings
 from .exceptions import EmbeddingError
 

@@ -9,9 +9,9 @@ from unittest.mock import Mock, patch, MagicMock
 import pytest
 
 # プロジェクトルートをパスに追加
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "notebooks"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from config_loader import (
+from src.config import (
     ConfigLoader,
     load_config,
     get_db_connection_params,
@@ -300,7 +300,7 @@ class TestLoadConfig:
 
         monkeypatch.chdir(tmp_path)
 
-        with patch('config_loader.load_dotenv') as mock_load_dotenv:
+        with patch('src.config.config_loader.load_dotenv') as mock_load_dotenv:
             with patch('builtins.print'):
                 load_config()
                 mock_load_dotenv.assert_called_once()
@@ -322,7 +322,7 @@ class TestLoadConfig:
         subdir.mkdir()
         monkeypatch.chdir(subdir)
 
-        with patch('config_loader.load_dotenv') as mock_load_dotenv:
+        with patch('src.config.config_loader.load_dotenv') as mock_load_dotenv:
             with patch('builtins.print'):
                 load_config()
                 mock_load_dotenv.assert_called_once()
@@ -360,7 +360,7 @@ class TestGetOciConfig:
         }
 
         with patch.dict(os.environ, {}, clear=True):
-            with patch('config_loader.Path.exists', return_value=True):
+            with patch('src.config.config_loader.Path.exists', return_value=True):
                 with patch('oci.config.from_file', return_value=mock_config):
                     with patch('builtins.print'):
                         result = get_oci_config()
@@ -376,7 +376,7 @@ class TestGetOciConfig:
         }
 
         with patch.dict(os.environ, {'OCI_PROFILE': 'CUSTOM'}, clear=True):
-            with patch('config_loader.Path.exists', return_value=True):
+            with patch('src.config.config_loader.Path.exists', return_value=True):
                 with patch('oci.config.from_file', return_value=mock_config) as mock_from_file:
                     with patch('builtins.print'):
                         result = get_oci_config()
@@ -388,7 +388,7 @@ class TestGetOciConfig:
     def test_config_file_not_found(self):
         """設定ファイルが見つからない場合"""
         with patch.dict(os.environ, {}, clear=True):
-            with patch('config_loader.Path.exists', return_value=False):
+            with patch('src.config.config_loader.Path.exists', return_value=False):
                 with pytest.raises(FileNotFoundError, match="OCI設定ファイルが見つかりません"):
                     get_oci_config()
 
@@ -396,7 +396,7 @@ class TestGetOciConfig:
     def test_config_file_invalid(self):
         """設定ファイルの読み込みに失敗した場合"""
         with patch.dict(os.environ, {}, clear=True):
-            with patch('config_loader.Path.exists', return_value=True):
+            with patch('src.config.config_loader.Path.exists', return_value=True):
                 with patch('oci.config.from_file', side_effect=Exception("Invalid config")):
                     with pytest.raises(ValueError, match="OCI設定の読み込みに失敗しました"):
                         get_oci_config()

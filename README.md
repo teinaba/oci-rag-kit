@@ -56,9 +56,9 @@ OCI上にRAG環境を構築する方法は2つあります:
 cd setup && bash setup.sh
 
 # 3. Notebookを順番に実行
-# 11_create_table.ipynb    → DBテーブル作成
-# 12_data_pipeline.ipynb   → データ取り込み
-# 13_rag.ipynb             → RAG実行・評価
+# 01_setup_database.ipynb  → DBテーブル作成
+# 02_data_pipeline.ipynb   → データ取り込み
+# 03_rag.ipynb             → RAG実行・評価
 ```
 
 ## Prerequisites
@@ -79,10 +79,14 @@ infra/                   # インフラ構築
     └── *.tf
 
 notebooks/               # Jupyter Notebooks
-├── 11_create_table.ipynb
-├── 12_data_pipeline.ipynb
-├── 13_rag.ipynb
-└── config_loader.py
+├── 01_setup_database.ipynb
+├── 02_data_pipeline.ipynb
+└── 03_rag.ipynb
+
+src/                     # ソースコード
+├── config/              # 設定管理モジュール
+├── data_pipeline/       # データパイプラインクラス群
+└── rag/                 # RAG処理クラス群
 
 setup/                   # 環境構築
 ├── environment.yaml
@@ -126,20 +130,20 @@ key_file=~/.oci/oci_api_key.pem
 
 ## Usage
 
-### 1. `11_create_table.ipynb` - テーブル作成
+### 1. `01_setup_database.ipynb` - テーブル作成
 
 データベーススキーマを初期化
 - `source_documents` / `chunks` テーブル作成
 - テーブル構造の確認ユーティリティ付き
 
-### 2. `12_data_pipeline.ipynb` - データ取り込み
+### 2. `02_data_pipeline.ipynb` - データ取り込み
 
 Object Storage → Database へのパイプライン
 - サポート形式: PDF / TXT / CSV
 - 自動エンコーディング検出（UTF-8 / Shift-JIS）
 - チャンク分割 → Embedding → DB保存
 
-### 3. `13_rag.ipynb` - RAG実行・評価
+### 3. `03_rag.ipynb` - RAG実行・評価
 
 質問応答とパフォーマンス測定
 - ベクトル検索（COSINE距離）
