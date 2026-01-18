@@ -60,7 +60,6 @@ class TestNotebookRAGFlow:
         RERANK_ENABLED = True
         RERANK_TOP_N = 5
         CHAT_MODEL = "cohere.command-a-03-2025"
-        MAX_TOKENS = 500  # Reduced for testing
         TEMPERATURE = 0.3
         TOP_P = 0.75
         FREQUENCY_PENALTY = 0.0
@@ -145,7 +144,6 @@ class TestNotebookRAGFlow:
         batch_result = pipeline.process_batch(
             questions_df=faq_df,
             model=CHAT_MODEL,
-            max_tokens=MAX_TOKENS,
             temperature=TEMPERATURE,
             top_p=TOP_P,
             frequency_penalty=FREQUENCY_PENALTY,
@@ -220,7 +218,6 @@ class TestNotebookRAGFlow:
                 'RERANK_ENABLED (Rerankが有効か)',
                 'RERANK_TOP_N (Rerank後件数)',
                 'CHAT_MODEL (使用LLMモデル)',
-                'MAX_TOKENS (最大トークン数)',
                 'TEMPERATURE (温度)',
                 'TOP_P (Nucleus sampling)',
                 'FREQUENCY_PENALTY (頻度ペナルティ)',
@@ -243,7 +240,6 @@ class TestNotebookRAGFlow:
                 RERANK_ENABLED,
                 RERANK_TOP_N,
                 CHAT_MODEL,
-                MAX_TOKENS,
                 TEMPERATURE,
                 TOP_P,
                 FREQUENCY_PENALTY,
@@ -319,7 +315,6 @@ class TestNotebookRAGFlow:
         RERANK_ENABLED = True
         RERANK_TOP_N = 5
         CHAT_MODEL = "cohere.command-a-03-2025"
-        MAX_TOKENS = 500  # Reduced for testing
         TEMPERATURE = 0.3
         TOP_P = 0.75
         FREQUENCY_PENALTY = 0.0
@@ -399,7 +394,6 @@ class TestNotebookRAGFlow:
         batch_result = pipeline.process_batch(
             questions_df=faq_df,
             model=CHAT_MODEL,
-            max_tokens=MAX_TOKENS,
             temperature=TEMPERATURE,
             top_p=TOP_P,
             frequency_penalty=FREQUENCY_PENALTY,

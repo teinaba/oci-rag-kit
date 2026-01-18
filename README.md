@@ -154,12 +154,11 @@ Object Storage → Database へのパイプライン
 質問応答とパフォーマンス測定
 - ベクトル検索（COSINE距離）
 - 日本語Reranker適用
-- 12種類のLLMモデルから選択可能な回答生成
+- 11種類のLLMモデルから選択可能な回答生成
 - RAGAS評価（Faithfulness / Answer Correctness / Context Precision / Recall）
 
 #### 対応LLMモデル
-- **注) Google Geminiモデルの利用時に出力が途切れて保存されてしまうBugがあります。**
-- まずは、`command-a` か `grok-4-fast-non-reasoning` の利用をおすすめします。
+- 大阪リージョンで使用可能なのは、`Cohere` モデルと `Meta Llama` モデルです
 - 各モデルごとの[利用料金](https://www.oracle.com/jp/cloud/price-list/#pricing-ai)を確認の上ご利用ください
 
 | モデルファミリー | モデルID |

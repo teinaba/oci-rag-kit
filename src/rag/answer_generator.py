@@ -1,7 +1,7 @@
 """
-AnswerGenerator - LLM回答生成（12モデル対応）
+AnswerGenerator - LLM回答生成（11モデル対応）
 
-このモジュールは、OCI Generative AI Serviceの12モデルに対応した
+このモジュールは、OCI Generative AI Serviceの11モデルに対応した
 回答生成機能を提供します。HTTP 429エラーの自動リトライ機能を含みます。
 """
 
@@ -37,7 +37,7 @@ class GeneratedAnswer:
 
 
 class AnswerGenerator:
-    """LLM回答生成クラス（12モデル対応）
+    """LLM回答生成クラス（11モデル対応）
 
     責務:
     - OCI Generative AI Serviceを使用した回答生成
@@ -102,6 +102,12 @@ class AnswerGenerator:
         "openai.gpt-oss-120b"
     ]
 
+    # モデルごとの最大トークン数制限
+    MAX_TOKENS_LIMIT = {
+        "cohere": 4000,
+        "default": 128000
+    }
+
     def __init__(
         self,
         genai_client: Any,
@@ -143,7 +149,7 @@ class AnswerGenerator:
         query: str,
         contexts: List[RankedChunk],
         model: Optional[str] = None,
-        max_tokens: int = 1000,
+        max_tokens: int = 128000,
         temperature: float = 0.3,
         top_p: float = 0.75,
         frequency_penalty: float = 0.0,
@@ -157,7 +163,7 @@ class AnswerGenerator:
             query: 質問文
             contexts: コンテキストとなるチャンク（RankedChunkのリスト）
             model: 使用モデル（Noneの場合はdefault_modelを使用）
-            max_tokens: 最大トークン数（デフォルト: 1000）
+            max_tokens: 最大トークン数（デフォルト: 128000）
             temperature: 温度パラメータ（0-1、デフォルト: 0.3）
             top_p: Nucleus samplingパラメータ（0-1、デフォルト: 0.75）
             frequency_penalty: 頻度ペナルティ（Cohere用、0-1、デフォルト: 0.0）
@@ -174,6 +180,9 @@ class AnswerGenerator:
         # モデル選択（Noneの場合はdefault_modelを使用）
         model_to_use = model if model else self.default_model
 
+        # モデルごとのmax_tokens上限を適用
+        max_tokens_to_use = self._get_adjusted_max_tokens(model_to_use, max_tokens)
+
         # プロンプト構築
         prompt = self._build_prompt(query, contexts, answer_prompt)
 
@@ -186,7 +195,7 @@ class AnswerGenerator:
                 answer = self._generate_with_cohere(
                     prompt=prompt,
                     model=model_to_use,
-                    max_tokens=max_tokens,
+                    max_tokens=max_tokens_to_use,
                     temperature=temperature,
                     top_p=top_p,
                     frequency_penalty=frequency_penalty,
@@ -197,7 +206,7 @@ class AnswerGenerator:
                 answer = self._generate_with_generic(
                     prompt=prompt,
                     model=model_to_use,
-                    max_tokens=max_tokens,
+                    max_tokens=max_tokens_to_use,
                     temperature=temperature,
                     top_p=top_p
                 )
@@ -218,6 +227,25 @@ class AnswerGenerator:
             raise AnswerGenerationError(
                 f"Failed to generate answer with model {model_to_use}: {str(e)}"
             ) from e
+
+    def _get_adjusted_max_tokens(self, model: str, max_tokens: int) -> int:
+        """
+        モデルごとの最大トークン数制限を適用
+
+        Args:
+            model: モデルID
+            max_tokens: 指定されたmax_tokens
+
+        Returns:
+            int: モデルの上限を超えない調整後のmax_tokens
+        """
+        # Cohereモデルの場合は上限4000
+        if 'cohere' in model.lower():
+            limit = self.MAX_TOKENS_LIMIT['cohere']
+        else:
+            limit = self.MAX_TOKENS_LIMIT['default']
+
+        return min(max_tokens, limit)
 
     def _build_prompt(
         self,
